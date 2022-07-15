@@ -5,6 +5,10 @@ import { trpc } from "../utils/trpc";
 const Home: NextPage = () => {
   const hello = trpc.useQuery(["example.hello", { text: "from tRPC" }]);
 
+  // fully type-safe query interface based on trcp router definition
+  // check network tab to observe that both useQuery() definitions get batched in a single request
+  const profile = trpc.useQuery(["github.profile", "rschw"]);
+
   return (
     <>
       <Head>
@@ -80,6 +84,9 @@ const Home: NextPage = () => {
         <div className="pt-6 text-2xl text-blue-500 flex justify-center items-center w-full">
           {hello.data ? <p>{hello.data.greeting}</p> : <p>Loading..</p>}
         </div>
+        <pre className="pt-6 text-red-green-500 flex justify-center items-center w-full overflow-x-scroll">
+          {profile.data ? <p>{JSON.stringify(profile.data, null, 2)}</p> : <p>Loading profile..</p>}
+        </pre>
       </div>
     </>
   );
