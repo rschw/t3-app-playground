@@ -9,7 +9,7 @@ export const GithubProfile: React.FC<{ userName: string }> = ({ userName }) => {
     return <div className="flex items-center justify-center text-green-500">Loading profile..</div>;
 
   return (
-    <div className="flex gap-2 items-center">
+    <div className="flex gap-2 items-center justify-center">
       <img className="h-12 w-12 rounded-full object-cover" src={data.avatar_url} />
       <div className="flex flex-col">
         <a

@@ -4,6 +4,41 @@ import Head from "next/head";
 import { trpc } from "../utils/trpc";
 import { GithubProfile } from "./components/github-profile";
 
+const MyRoom = () => {
+  const { data, isLoading } = trpc.useQuery(["rooms.get-my-room"]);
+
+  const { mutate } = trpc.useMutation(["rooms.create-my-room"]);
+
+  if (isLoading) return <div>Loading...</div>;
+
+  if (!data)
+    return (
+      <div className="flex flex-col items-center text-center gap-4">
+        <h1 className="text-3xl font-semibold">
+          Set up your planning poker in seconds, start estimating story points in scrum poker now
+        </h1>
+        <p>Create your planning room and invite others with a single click</p>
+        <button
+          className="px-4 py-2 rounded bg-violet-500 text-white font-semibold uppercase"
+          onClick={() => mutate()}
+        >
+          Create Instant Room
+        </button>
+      </div>
+    );
+
+  return (
+    <div className="flex flex-col items-center text-center gap-4">
+      <h1 className="text-3xl font-semibold">A personal poker room has been assigned to you.</h1>
+      <p>Share the room id with your team mates so they can join the scrum poker.</p>
+      <div className="text-xl uppercase">YOUR ROOM ID: {data?.id}</div>
+      <button className="px-4 py-2 rounded bg-violet-500 text-white font-semibold uppercase">
+        Enter Your Room
+      </button>
+    </div>
+  );
+};
+
 const HomeContents = () => {
   const { data, status } = useSession();
 
@@ -11,18 +46,33 @@ const HomeContents = () => {
 
   if (!data)
     return (
-      <div>
+      <div className="flex flex-col gap-4 items-center">
         Please log in
-        <button onClick={() => signIn()}>Sign In</button>
+        <button
+          className="px-4 py-2 bg-violet-500 text-white font-semibold rounded"
+          onClick={() => signIn()}
+        >
+          Sign In
+        </button>
       </div>
     );
 
   return (
-    <div>
-      Hello {data.user?.name} {data.user?.id}
-      <button onClick={() => signOut()}>Sign Out</button>
+    <>
+      <div className="flex gap-4 items-center justify-center">
+        <div>
+          Hello <span className="text-violet-500">{data.user?.name}</span> {data.user?.id}
+        </div>
+        <button
+          className="px-4 py-2 bg-violet-500 text-white font-semibold rounded"
+          onClick={() => signOut()}
+        >
+          Sign Out
+        </button>
+      </div>
       <GithubProfile userName={data.user?.name!} />
-    </div>
+      <MyRoom />
+    </>
   );
 };
 
@@ -37,7 +87,9 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <HomeContents />
+      <main className="my-20 container mx-auto flex flex-col gap-20">
+        <HomeContents />
+      </main>
     </>
   );
 };

@@ -15,6 +15,13 @@ model Example {
     id String @id @default(cuid())
 }
 
+model Room {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+
+    userId String @unique
+}
+
 // Necessary for Next auth
 model Account {
     id                String  @id @default(cuid())
