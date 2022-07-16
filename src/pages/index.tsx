@@ -2,12 +2,41 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import { trpc } from "../utils/trpc";
 
-const Home: NextPage = () => {
-  const hello = trpc.useQuery(["example.hello", { text: "from tRPC" }]);
-
+const GithubProfile: React.FC<{ userName: string}> = ({userName}) => {
   // fully type-safe query interface based on trcp router definition
   // check network tab to observe that both useQuery() definitions get batched in a single request
-  const profile = trpc.useQuery(["github.profile", "rschw"]);
+  const { data, isLoading } = trpc.useQuery(["github.profile", userName]);
+
+    if (isLoading)
+      return (
+        <div className="flex items-center justify-center text-green-500">Loading profile..</div>
+      );
+
+    return (
+      <div className="p-1 flex gap-2 items-center justify-center border-2 border-gray-500 rounded">
+        <img className="h-12 w-12 rounded-full object-cover" src={data.avatar_url}/>
+        <div className="flex flex-col">
+            <a
+              className="text-sm text-violet-500 underline decoration-dotted underline-offset-2 cursor-pointer"
+              href={data.html_url}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {data.login}
+            </a>
+          <div className="flex gap-2">
+            <span className="text-sm text-gray-600">{data.followers} followers</span>
+            <span className="text-sm text-gray-600">{data.following} following</span>
+          </div>
+          <span className="text-sm text-gray-600">{data.public_repos} 📦</span>
+          {/* <pre>{JSON.stringify(data, null, 2)}</pre> */}
+        </div>
+      </div>
+    )
+}
+
+const Home: NextPage = () => {
+  const hello = trpc.useQuery(["example.hello", { text: "from tRPC" }]);
 
   return (
     <>
@@ -84,9 +113,7 @@ const Home: NextPage = () => {
         <div className="pt-6 text-2xl text-blue-500 flex justify-center items-center w-full">
           {hello.data ? <p>{hello.data.greeting}</p> : <p>Loading..</p>}
         </div>
-        <pre className="pt-6 text-red-green-500 flex justify-center items-center w-full overflow-x-scroll">
-          {profile.data ? <p>{JSON.stringify(profile.data, null, 2)}</p> : <p>Loading profile..</p>}
-        </pre>
+        <GithubProfile userName="rschw" />
       </div>
     </>
   );
