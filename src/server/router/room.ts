@@ -37,16 +37,35 @@ export const roomRouter = createRouter()
       estimate: z.string()
     }),
     async resolve({ ctx, input }) {
-      const room = await ctx.prisma.room.findFirst({
+      if (!ctx.session) {
+        throw new TRPCError({ message: "You are not signed in", code: "UNAUTHORIZED" });
+      }
+
+      const updateRoom = await ctx.prisma.room.update({
         where: {
           id: input.roomId
+        },
+        data: {
+          estimate: {
+            upsert: {
+              where: {
+                userId: ctx.session.user?.id
+              },
+              create: {
+                userId: ctx.session.user?.id!,
+                value: input.estimate
+              },
+              update: {
+                value: input.estimate
+              }
+            }
+          }
+        },
+        include: {
+          estimate: true
         }
       });
 
-      if (!room) {
-        throw new TRPCError({ message: "Room not found", code: "NOT_FOUND" });
-      }
-
-      // TODO add estimate for user to room
+      console.log(updateRoom);
     }
   });
