@@ -30,4 +30,23 @@ export const roomRouter = createRouter()
 
       return room;
     }
+  })
+  .mutation("submit-estimate", {
+    input: z.object({
+      roomId: z.string(),
+      estimate: z.string()
+    }),
+    async resolve({ ctx, input }) {
+      const room = await ctx.prisma.room.findFirst({
+        where: {
+          id: input.roomId
+        }
+      });
+
+      if (!room) {
+        throw new TRPCError({ message: "Room not found", code: "NOT_FOUND" });
+      }
+
+      // TODO add estimate for user to room
+    }
   });
