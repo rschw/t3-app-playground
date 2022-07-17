@@ -1,6 +1,7 @@
 import type { NextPage } from "next";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
+import Link from "next/link";
 import { trpc } from "../utils/trpc";
 
 const GithubProfile: React.FC<{ userName: string }> = ({ userName }) => {
@@ -61,9 +62,11 @@ const MyRoom = () => {
       <h1 className="text-3xl font-semibold">A personal poker room has been assigned to you.</h1>
       <p>Share the room id with your team mates so they can join the scrum poker.</p>
       <div className="text-xl uppercase">YOUR ROOM ID: {data?.id}</div>
-      <button className="px-4 py-2 rounded bg-violet-500 text-white font-semibold uppercase">
-        Enter Your Room
-      </button>
+      <Link href={`/room/${data.id}`}>
+        <button className="px-4 py-2 rounded bg-violet-500 text-white font-semibold uppercase">
+          Enter Your Room
+        </button>
+      </Link>
     </div>
   );
 };
