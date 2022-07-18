@@ -68,4 +68,21 @@ export const roomRouter = createRouter()
 
       console.log(updateRoom);
     }
+  })
+  .query("get-room-estimates", {
+    input: z.object({
+      roomId: z.string()
+    }),
+    async resolve({ ctx, input }) {
+      const estimates = await ctx.prisma.estimate.findMany({
+        where: {
+          roomId: input.roomId
+        },
+        include: {
+          user: true
+        }
+      });
+
+      return estimates;
+    }
   });
