@@ -1,5 +1,6 @@
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { pusherClient } from "../../utils/pusher";
 import { trpc } from "../../utils/trpc";
 
 const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
@@ -33,9 +34,15 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
 };
 
 const EstimateResults: React.FC<{ roomId: string }> = ({ roomId }) => {
-  const { data, isLoading } = trpc.useQuery(["rooms.get-room-estimates", { roomId }]);
+  const { data, isLoading, refetch } = trpc.useQuery(["rooms.get-room-estimates", { roomId }]);
 
   if (isLoading) return null;
+
+  const channel = pusherClient.subscribe(`room-${roomId}`);
+  channel.bind("estimate-submitted", (data: any) => {
+    console.log(data);
+    refetch();
+  });
 
   return (
     <section>
@@ -68,11 +75,13 @@ const RoomPage = () => {
     return null;
   }
 
+  const { roomId } = query;
+
   return (
     <>
       <main className="my-20 container mx-auto flex flex-col gap-10">
-        <SubmitEstimate roomId={query.roomId} />
-        <EstimateResults roomId={query.roomId} />
+        <SubmitEstimate roomId={roomId} />
+        <EstimateResults roomId={roomId} />
       </main>
     </>
   );
