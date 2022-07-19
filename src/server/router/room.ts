@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { pusherServerClient } from "../common/pusher";
 import { createRouter } from "./context";
 
 export const roomRouter = createRouter()
@@ -41,22 +42,25 @@ export const roomRouter = createRouter()
         throw new TRPCError({ message: "You are not signed in", code: "UNAUTHORIZED" });
       }
 
-      const updateRoom = await ctx.prisma.room.update({
+      const userId = ctx.session.user?.id!;
+      const { roomId, estimate } = input;
+
+      await ctx.prisma.room.update({
         where: {
-          id: input.roomId
+          id: roomId
         },
         data: {
           estimate: {
             upsert: {
               where: {
-                userId: ctx.session.user?.id
+                userId: userId
               },
               create: {
-                userId: ctx.session.user?.id!,
-                value: input.estimate
+                userId: userId,
+                value: estimate
               },
               update: {
-                value: input.estimate
+                value: estimate
               }
             }
           }
@@ -66,7 +70,7 @@ export const roomRouter = createRouter()
         }
       });
 
-      console.log(updateRoom);
+      await pusherServerClient.trigger(`room-${roomId}`, "estimate-submitted", {});
     }
   })
   .query("get-room-estimates", {
