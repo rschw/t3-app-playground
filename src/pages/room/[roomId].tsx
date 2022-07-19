@@ -1,6 +1,7 @@
+import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useState } from "react";
-import { pusherClient } from "../../utils/pusher";
+import Pusher from "pusher-js";
+import { useEffect, useState } from "react";
 import { trpc } from "../../utils/trpc";
 
 const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
@@ -33,16 +34,44 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
   );
 };
 
+const pusher_key = process.env.NEXT_PUBLIC_PUSHER_APP_KEY!;
+
 const EstimateResults: React.FC<{ roomId: string }> = ({ roomId }) => {
   const { data, isLoading, refetch } = trpc.useQuery(["rooms.get-room-estimates", { roomId }]);
 
-  if (isLoading) return null;
+  const [clientId] = useState(`random-user-id:${Math.random().toFixed(7)}`);
 
-  const channel = pusherClient.subscribe(`room-${roomId}`);
-  channel.bind("estimate-submitted", (data: any) => {
-    console.log(data);
-    refetch();
-  });
+  const [client] = useState(
+    new Pusher(pusher_key, {
+      wsHost: "127.0.0.1",
+      wsPort: 6001,
+      forceTLS: false,
+      enabledTransports: ["ws", "wss"],
+      authEndpoint: "/api/pusher/auth-channel",
+      auth: {
+        headers: { user_id: clientId }
+      }
+    })
+  );
+
+  useEffect(() => {
+    const eventName = "estimate-submitted";
+    function handleEstimateSubmitted() {
+      refetch();
+    }
+
+    console.log("subscribing to channel");
+    const channel = client.subscribe(`room-${roomId}`);
+    channel.bind(eventName, handleEstimateSubmitted);
+
+    return function cleanup() {
+      console.log("cleaning up channel");
+      channel.unbind(eventName, handleEstimateSubmitted);
+      channel.disconnect();
+    };
+  }, [client, roomId, refetch]);
+
+  if (isLoading) return null;
 
   return (
     <section>
@@ -67,21 +96,21 @@ const EstimateResults: React.FC<{ roomId: string }> = ({ roomId }) => {
   );
 };
 
-const RoomPage = () => {
+const RoomPage: NextPage = () => {
   const { query } = useRouter();
 
+  const { roomId } = query;
+
   // since it is a static page the id does not exist on first render
-  if (!query.roomId || typeof query.roomId !== "string") {
+  if (!roomId || typeof roomId !== "string") {
     return null;
   }
-
-  const { roomId } = query;
 
   return (
     <>
       <main className="my-20 container mx-auto flex flex-col gap-10">
         <SubmitEstimate roomId={roomId} />
-        <EstimateResults roomId={roomId} />
+        <EstimateResults roomId={roomId as string} />
       </main>
     </>
   );
