@@ -1,43 +1,20 @@
 import type { NextPage } from "next";
-import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
 import { trpc } from "../utils/trpc";
-
-const GithubProfile: React.FC<{ userName: string }> = ({ userName }) => {
-  // fully type-safe query interface based on trcp router definition
-  // check network tab to observe that both useQuery() definitions get batched in a single request
-  const { data, isLoading } = trpc.useQuery(["github.profile", userName]);
-
-  if (isLoading)
-    return <div className="flex items-center justify-center text-green-500">Loading profile..</div>;
-
-  return (
-    <div className="flex gap-2 items-center justify-center">
-      <img className="h-12 w-12 rounded-full object-cover" src={data.avatar_url} />
-      <div className="flex flex-col">
-        <a
-          className="text-sm text-violet-500 underline decoration-dotted underline-offset-2 cursor-pointer"
-          href={data.html_url}
-          target="_blank"
-          rel="noreferrer"
-        >
-          {data.login}
-        </a>
-        <div className="flex gap-2">
-          <span className="text-sm text-gray-600">{data.followers} followers</span>
-          <span className="text-sm text-gray-600">{data.following} following</span>
-          <span className="text-sm text-gray-600">{data.public_repos} 📦</span>
-        </div>
-      </div>
-    </div>
-  );
-};
+import { useUserId } from "../utils/user-id";
 
 const MyRoom = () => {
-  const { data, isLoading } = trpc.useQuery(["rooms.get-my-room"]);
+  const userId = useUserId();
 
-  const { mutate } = trpc.useMutation(["rooms.create-my-room"]);
+  const { data, isLoading, refetch } = trpc.useQuery(["rooms.get-my-room", { userId: userId }]);
+
+  const { mutateAsync } = trpc.useMutation(["rooms.create-my-room"]);
+
+  const handleCreateRoom = async () => {
+    await mutateAsync({ userId });
+    await refetch();
+  };
 
   if (isLoading) return <div>Loading...</div>;
 
@@ -50,7 +27,7 @@ const MyRoom = () => {
         <p>Create your planning room and invite others with a single click</p>
         <button
           className="px-4 py-2 rounded bg-violet-500 text-white font-semibold uppercase"
-          onClick={() => mutate()}
+          onClick={handleCreateRoom}
         >
           Create Instant Room
         </button>
@@ -61,50 +38,13 @@ const MyRoom = () => {
     <div className="flex flex-col items-center text-center gap-4">
       <h1 className="text-3xl font-semibold">A personal poker room has been assigned to you.</h1>
       <p>Share the room id with your team mates so they can join the scrum poker.</p>
-      <div className="text-xl uppercase">YOUR ROOM ID: {data?.id}</div>
+      <div className="text-xl uppercase">YOUR ROOM ID: {data.id}</div>
       <Link href={`/room/${data.id}`}>
         <button className="px-4 py-2 rounded bg-violet-500 text-white font-semibold uppercase">
           Enter Your Room
         </button>
       </Link>
     </div>
-  );
-};
-
-const HomeContents = () => {
-  const { data, status } = useSession();
-
-  if (status === "loading") return <div>Loading...</div>;
-
-  if (!data)
-    return (
-      <div className="flex flex-col gap-4 items-center">
-        Please log in
-        <button
-          className="px-4 py-2 bg-violet-500 text-white font-semibold rounded"
-          onClick={() => signIn()}
-        >
-          Sign In
-        </button>
-      </div>
-    );
-
-  return (
-    <>
-      <div className="flex gap-4 items-center justify-center">
-        <div>
-          Hello <span className="text-violet-500">{data.user?.name}</span> {data.user?.id}
-        </div>
-        <button
-          className="px-4 py-2 bg-violet-500 text-white font-semibold rounded"
-          onClick={() => signOut()}
-        >
-          Sign Out
-        </button>
-      </div>
-      <GithubProfile userName={data.user?.name!} />
-      <MyRoom />
-    </>
   );
 };
 
@@ -118,7 +58,7 @@ const Home: NextPage = () => {
       </Head>
 
       <main className="my-20 container mx-auto flex flex-col gap-20">
-        <HomeContents />
+        <MyRoom />
       </main>
     </>
   );

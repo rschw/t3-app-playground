@@ -1,32 +1,35 @@
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { pusherServerClient } from "../common/pusher";
 import { createRouter } from "./context";
 
 export const roomRouter = createRouter()
   .query("get-my-room", {
-    async resolve({ ctx }) {
-      if (!ctx.session) {
-        throw new TRPCError({ message: "You are not signed in", code: "UNAUTHORIZED" });
-      }
+    input: z.object({
+      userId: z.string()
+    }),
+    async resolve({ ctx, input }) {
+      const { userId } = input;
+
+      console.log("get-my-room: " + JSON.stringify(input));
 
       const room = await ctx.prisma.room.findFirst({
-        where: {
-          userId: ctx.session.user?.id
-        }
+        where: { userId: userId }
       });
 
       return room;
     }
   })
   .mutation("create-my-room", {
-    async resolve({ ctx }) {
-      if (!ctx.session) {
-        throw new TRPCError({ message: "You are not signed in", code: "UNAUTHORIZED" });
-      }
+    input: z.object({
+      userId: z.string()
+    }),
+    async resolve({ ctx, input }) {
+      const { userId } = input;
+
+      console.log("create-my-room: " + JSON.stringify(input));
 
       const room = await ctx.prisma.room.create({
-        data: { userId: ctx.session.user?.id! }
+        data: { userId: userId }
       });
 
       return room;
@@ -34,16 +37,14 @@ export const roomRouter = createRouter()
   })
   .mutation("submit-estimate", {
     input: z.object({
+      userId: z.string(),
       roomId: z.string(),
       estimate: z.string()
     }),
     async resolve({ ctx, input }) {
-      if (!ctx.session) {
-        throw new TRPCError({ message: "You are not signed in", code: "UNAUTHORIZED" });
-      }
+      const { userId, roomId, estimate } = input;
 
-      const userId = ctx.session.user?.id!;
-      const { roomId, estimate } = input;
+      console.log("submit-estimate: " + JSON.stringify(input));
 
       await ctx.prisma.room.update({
         where: {
@@ -78,13 +79,12 @@ export const roomRouter = createRouter()
       roomId: z.string()
     }),
     async resolve({ ctx, input }) {
+      const { roomId } = input;
+
+      console.log("get-room-estimates: " + JSON.stringify(input));
+
       const estimates = await ctx.prisma.estimate.findMany({
-        where: {
-          roomId: input.roomId
-        },
-        include: {
-          user: true
-        }
+        where: { roomId: roomId }
       });
 
       return estimates;

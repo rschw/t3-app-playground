@@ -3,9 +3,12 @@ import { useRouter } from "next/router";
 import Pusher from "pusher-js";
 import { useEffect, useState } from "react";
 import { trpc } from "../../utils/trpc";
+import { useUserId } from "../../utils/user-id";
 
 const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
   const estimateOptions = ["?", "0", "0.5", "1", "2", "3", "5", "8", "13", "20", "40", "100"];
+
+  const userId = useUserId();
 
   const [estimate, setEstimate] = useState("");
 
@@ -22,7 +25,7 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
               estimate === option ? "bg-violet-500 text-white" : ""
             } hover:bg-violet-500 hover:text-white rounded grid items-center justify-center text-5xl cursor-pointer`}
             onClick={() => {
-              mutate({ roomId, estimate: option });
+              mutate({ userId, roomId, estimate: option });
               setEstimate(option);
             }}
           >
@@ -86,7 +89,7 @@ const EstimateResults: React.FC<{ roomId: string }> = ({ roomId }) => {
         <tbody>
           {data?.map((estimate) => (
             <tr key={estimate.id}>
-              <td className="border-b border-slate-100 p-4 pl-8">{estimate.user.name}</td>
+              <td className="border-b border-slate-100 p-4 pl-8">{estimate.userId}</td>
               <td className="border-b border-slate-100 p-4 pl-8">{estimate.value}</td>
             </tr>
           ))}
@@ -110,7 +113,7 @@ const RoomPage: NextPage = () => {
     <>
       <main className="my-20 container mx-auto flex flex-col gap-10">
         <SubmitEstimate roomId={roomId} />
-        <EstimateResults roomId={roomId as string} />
+        <EstimateResults roomId={roomId} />
       </main>
     </>
   );
