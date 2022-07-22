@@ -12,9 +12,9 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
   const { mutate } = trpc.useMutation(["rooms.submit-estimate"]);
 
   return (
-    <section>
-      <h1 className="font-semibold text-lg mb-4">Submit estimate</h1>
-      <div className="grid grid-cols-6 gap-8">
+    <section className="flex flex-col gap-5">
+      <h1 className="font-semibold text-lg">Submit estimate</h1>
+      <div className="grid grid-cols-6 gap-4">
         {estimateOptions.map((option) => (
           <button
             key={option}

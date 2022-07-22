@@ -8,7 +8,7 @@ const pusher_key = process.env.NEXT_PUBLIC_PUSHER_APP_KEY!;
 const pusher_host = process.env.NEXT_PUBLIC_PUSHER_APP_HOST!;
 const pusher_port = parseInt(process.env.NEXT_PUBLIC_PUSHER_APP_PORT!);
 
-const EstimateResults: React.FC<{ roomId: string }> = ({ roomId }) => {
+const RoomEstimates: React.FC<{ roomId: string }> = ({ roomId }) => {
   const { data, isLoading, refetch } = trpc.useQuery(["rooms.get-room-estimates", { roomId }]);
 
   const userId = useUserId();
@@ -53,21 +53,21 @@ const EstimateResults: React.FC<{ roomId: string }> = ({ roomId }) => {
   if (isLoading) return null;
 
   return (
-    <section>
-      <h1 className="font-semibold text-lg mb-8">Results</h1>
+    <section className="flex flex-col gap-5">
+      <h1 className="font-semibold text-lg">Results</h1>
       <RoomControls roomId={roomId} />
-      <table className="table-auto w-full">
-        <thead>
+      <table className="table-auto w-full shadow shadow-violet-300">
+        <thead className="bg-violet-500 text-white">
           <tr>
-            <th className="border-b font-medium p-4 text-left">Name</th>
-            <th className="border-b font-medium p-4 text-left">Story Points</th>
+            <th className="border-b font-semibold p-4 text-left">Name</th>
+            <th className="border-b font-semibold p-4 text-left">Story Points</th>
           </tr>
         </thead>
         <tbody>
           {data?.map((estimate) => (
             <tr key={estimate.id}>
-              <td className="border-b border-slate-100 p-4">{estimate.userId}</td>
-              <td className="border-b border-slate-100 p-4">{estimate.value}</td>
+              <td className="border-b border-violet-100 p-4">{estimate.userId}</td>
+              <td className="border-b border-violet-100 p-4">{estimate.value}</td>
             </tr>
           ))}
         </tbody>
@@ -76,4 +76,4 @@ const EstimateResults: React.FC<{ roomId: string }> = ({ roomId }) => {
   );
 };
 
-export default EstimateResults;
+export default RoomEstimates;
