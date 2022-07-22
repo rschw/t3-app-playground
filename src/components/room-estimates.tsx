@@ -2,6 +2,7 @@ import Pusher from "pusher-js";
 import { useState, useEffect } from "react";
 import { trpc } from "../utils/trpc";
 import { useUserId } from "../utils/user-id";
+import RoomControls from "./room-controls";
 
 const pusher_key = process.env.NEXT_PUBLIC_PUSHER_APP_KEY!;
 
@@ -29,11 +30,18 @@ const EstimateResults: React.FC<{ roomId: string }> = ({ roomId }) => {
       refetch();
     }
 
+    const estimatesDeleted = "estimates-deleted";
+    function handleEstimatesDeleted() {
+      refetch();
+    }
+
     const channel = client.subscribe(`room-${roomId}`);
     channel.bind(estimateSubmitted, handleEstimateSubmitted);
+    channel.bind(estimatesDeleted, handleEstimatesDeleted);
 
     return function cleanup() {
       channel.unbind(estimateSubmitted, handleEstimateSubmitted);
+      channel.unbind(estimatesDeleted, handleEstimatesDeleted);
       channel.disconnect();
     };
   }, [client, roomId, refetch]);
@@ -43,6 +51,7 @@ const EstimateResults: React.FC<{ roomId: string }> = ({ roomId }) => {
   return (
     <section>
       <h1 className="font-semibold text-lg mb-8">Results</h1>
+      <RoomControls roomId={roomId} />
       <table className="table-auto w-full">
         <thead>
           <tr>

@@ -89,4 +89,21 @@ export const roomRouter = createRouter()
 
       return estimates;
     }
+  })
+  .mutation("delete-room-estimates", {
+    input: z.object({
+      roomId: z.string()
+    }),
+    async resolve({ ctx, input }) {
+      const { roomId } = input;
+
+      console.log("delete-room-estimates: " + JSON.stringify(input));
+
+      await ctx.prisma.estimate.updateMany({
+        where: { roomId: roomId },
+        data: { value: "-" }
+      });
+
+      await pusherServerClient.trigger(`room-${roomId}`, "estimates-deleted", {});
+    }
   });
