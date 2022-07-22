@@ -17,7 +17,7 @@ const RoomPage: NextPage = () => {
 
   return (
     <>
-      <main className="container mx-auto flex flex-col gap-10">
+      <main className="px-4 md:px-6 py-8 md:py-20 container mx-auto flex flex-col gap-8 md:gap-10">
         <ShareRoom roomId={roomId} />
         <SubmitEstimate roomId={roomId} />
         <RoomEstimates roomId={roomId} />

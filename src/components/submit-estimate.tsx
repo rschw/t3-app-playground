@@ -14,13 +14,13 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
   return (
     <section className="flex flex-col gap-5">
       <h1 className="font-semibold text-lg">Submit estimate</h1>
-      <div className="grid grid-cols-6 gap-4">
+      <div className="grid grid-cols-5 md:grid-cols-6 gap-2 md:gap-4">
         {estimateOptions.map((option) => (
           <button
             key={option}
             className={`aspect-2/3 border border-violet-500 ${
               estimate === option ? "bg-violet-500 text-white" : ""
-            } hover:bg-violet-500 hover:text-white rounded grid items-center justify-center text-5xl cursor-pointer`}
+            } hover:bg-violet-500 hover:text-white rounded grid items-center justify-center text-xl md:text-5xl cursor-pointer`}
             onClick={() => {
               mutate({ userId, roomId, estimate: option });
               setEstimate(option);
