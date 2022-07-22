@@ -1,13 +1,14 @@
 import Pusher from "pusher-js";
 import { useState, useEffect } from "react";
 import { trpc } from "../utils/trpc";
+import { useUserId } from "../utils/user-id";
 
 const pusher_key = process.env.NEXT_PUBLIC_PUSHER_APP_KEY!;
 
 const EstimateResults: React.FC<{ roomId: string }> = ({ roomId }) => {
   const { data, isLoading, refetch } = trpc.useQuery(["rooms.get-room-estimates", { roomId }]);
 
-  const [clientId] = useState(`random-user-id:${Math.random().toFixed(7)}`);
+  const userId = useUserId();
 
   const [client] = useState(
     new Pusher(pusher_key, {
@@ -17,24 +18,22 @@ const EstimateResults: React.FC<{ roomId: string }> = ({ roomId }) => {
       enabledTransports: ["ws", "wss"],
       authEndpoint: "/api/pusher/auth-channel",
       auth: {
-        headers: { user_id: clientId }
+        headers: { user_id: userId }
       }
     })
   );
 
   useEffect(() => {
-    const eventName = "estimate-submitted";
+    const estimateSubmitted = "estimate-submitted";
     function handleEstimateSubmitted() {
       refetch();
     }
 
-    console.log("subscribing to channel");
     const channel = client.subscribe(`room-${roomId}`);
-    channel.bind(eventName, handleEstimateSubmitted);
+    channel.bind(estimateSubmitted, handleEstimateSubmitted);
 
     return function cleanup() {
-      console.log("cleaning up channel");
-      channel.unbind(eventName, handleEstimateSubmitted);
+      channel.unbind(estimateSubmitted, handleEstimateSubmitted);
       channel.disconnect();
     };
   }, [client, roomId, refetch]);
@@ -47,15 +46,15 @@ const EstimateResults: React.FC<{ roomId: string }> = ({ roomId }) => {
       <table className="table-auto w-full">
         <thead>
           <tr>
-            <th className="border-b font-medium p-4 . pl-8 pt-0 pb-3 text-left">Name</th>
-            <th className="border-b font-medium p-4 . pl-8 pt-0 pb-3 text-left">Story Points</th>
+            <th className="border-b font-medium p-4 text-left">Name</th>
+            <th className="border-b font-medium p-4 text-left">Story Points</th>
           </tr>
         </thead>
         <tbody>
           {data?.map((estimate) => (
             <tr key={estimate.id}>
-              <td className="border-b border-slate-100 p-4 pl-8">{estimate.userId}</td>
-              <td className="border-b border-slate-100 p-4 pl-8">{estimate.value}</td>
+              <td className="border-b border-slate-100 p-4">{estimate.userId}</td>
+              <td className="border-b border-slate-100 p-4">{estimate.value}</td>
             </tr>
           ))}
         </tbody>
