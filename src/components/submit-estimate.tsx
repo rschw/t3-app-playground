@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { trpc } from "../utils/trpc";
 import { useUserId } from "../utils/user-id";
 
@@ -9,7 +10,18 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
 
   const [estimate, setEstimate] = useState("");
 
-  const { mutate } = trpc.useMutation(["rooms.submit-estimate"]);
+  const { data } = trpc.useQuery(["rooms.get-room-estimates", { roomId }]);
+
+  useEffect(() => {
+    if (data) {
+      const estimate = data.find(({ userId: id }) => id === userId);
+      if (estimate) {
+        setEstimate(estimate.value);
+      }
+    }
+  }, [data, userId]);
+
+  const { mutateAsync } = trpc.useMutation(["rooms.submit-estimate"]);
 
   return (
     <section className="flex flex-col gap-5">
@@ -22,7 +34,9 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
               estimate === option ? "bg-violet-500 text-white" : ""
             } hover:bg-violet-500 hover:text-white rounded grid items-center justify-center text-xl md:text-5xl cursor-pointer`}
             onClick={() => {
-              mutate({ userId, roomId, estimate: option });
+              mutateAsync({ userId, roomId, estimate: option })
+                .catch(() => toast.error("Oops something went wrong"))
+                .then(() => toast.success("Estimate submitted"));
               setEstimate(option);
             }}
           >

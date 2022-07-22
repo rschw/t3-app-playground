@@ -14,7 +14,7 @@ const RoomControls: React.FC<{ roomId: string }> = ({ roomId }) => {
         className="py-2 px-4 rounded shadow shadow-violet-300"
         onClick={() => {
           mutateAsync({ roomId })
-            .catch(() => toast.error("Ups something went wrong"))
+            .catch(() => toast.error("Oops something went wrong"))
             .then(() => toast.success("Estimates deleted"));
         }}
       >
