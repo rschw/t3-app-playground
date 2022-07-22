@@ -1,6 +1,7 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import EstimateResults from "../../components/room-estimates";
+import ShareRoom from "../../components/share-room";
 import SubmitEstimate from "../../components/submit-estimate";
 
 const RoomPage: NextPage = () => {
@@ -16,6 +17,7 @@ const RoomPage: NextPage = () => {
   return (
     <>
       <main className="my-20 container mx-auto flex flex-col gap-10">
+        <ShareRoom roomId={roomId} />
         <SubmitEstimate roomId={roomId} />
         <EstimateResults roomId={roomId} />
       </main>
