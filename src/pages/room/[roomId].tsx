@@ -7,13 +7,11 @@ import SubmitEstimate from "../../components/submit-estimate";
 
 const RoomPage: NextPage = () => {
   const { query } = useRouter();
-
-  const { roomId } = query;
-
-  // since it is a static page the id does not exist on first render
-  if (!roomId || typeof roomId !== "string") {
+  if (!query.roomId || typeof query.roomId !== "string") {
     return null;
   }
+
+  const { roomId } = query;
 
   return (
     <>
