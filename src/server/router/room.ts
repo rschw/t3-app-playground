@@ -47,15 +47,11 @@ export const roomRouter = createRouter()
       console.log("submit-estimate: " + JSON.stringify(input));
 
       await ctx.prisma.room.update({
-        where: {
-          id: roomId
-        },
+        where: { id: roomId },
         data: {
           estimate: {
             upsert: {
-              where: {
-                userId: userId
-              },
+              where: { userId: userId },
               create: {
                 userId: userId,
                 value: estimate
@@ -65,9 +61,6 @@ export const roomRouter = createRouter()
               }
             }
           }
-        },
-        include: {
-          estimate: true
         }
       });
 
@@ -83,11 +76,12 @@ export const roomRouter = createRouter()
 
       console.log("get-room-estimates: " + JSON.stringify(input));
 
-      const estimates = await ctx.prisma.estimate.findMany({
-        where: { roomId: roomId }
+      const room = await ctx.prisma.room.findFirst({
+        where: { id: roomId },
+        include: { estimate: true }
       });
 
-      return estimates;
+      return room;
     }
   })
   .mutation("delete-room-estimates", {
@@ -99,9 +93,16 @@ export const roomRouter = createRouter()
 
       console.log("delete-room-estimates: " + JSON.stringify(input));
 
-      await ctx.prisma.estimate.updateMany({
-        where: { roomId: roomId },
-        data: { value: "-" }
+      await ctx.prisma.room.update({
+        where: { id: roomId },
+        data: {
+          estimate: {
+            updateMany: {
+              where: { roomId: roomId },
+              data: { value: "-" }
+            }
+          }
+        }
       });
 
       await pusherServerClient.trigger(`room-${roomId}`, "estimates-deleted", {});

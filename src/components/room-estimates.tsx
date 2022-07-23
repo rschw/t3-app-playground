@@ -64,7 +64,7 @@ const RoomEstimates: React.FC<{ roomId: string }> = ({ roomId }) => {
           </tr>
         </thead>
         <tbody>
-          {data?.map((estimate) => (
+          {data?.estimate.map((estimate) => (
             <tr key={estimate.id}>
               <td className="border-b border-violet-100 p-4">{estimate.userId}</td>
               <td className="border-b border-violet-100 p-4">{estimate.value}</td>

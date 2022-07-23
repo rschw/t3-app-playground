@@ -11,10 +11,6 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Example {
-    id String @id @default(cuid())
-}
-
 model Room {
     id       String     @id @default(cuid())
     userId   String     @unique
@@ -22,11 +18,11 @@ model Room {
 }
 
 model Estimate {
-    id     String @id @default(cuid())
+    id     Int    @id @default(autoincrement())
+    userId String @unique
     value  String
     roomId String
     room   Room   @relation(fields: [roomId], references: [id])
-    userId String @unique
 }
 
 // Necessary for Next auth

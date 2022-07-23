@@ -14,7 +14,7 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
 
   useEffect(() => {
     if (data) {
-      const estimate = data.find(({ userId: id }) => id === userId);
+      const estimate = data.estimate.find(({ userId: id }) => id === userId);
       if (estimate) {
         setEstimate(estimate.value);
       }
