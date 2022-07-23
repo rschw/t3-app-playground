@@ -39,10 +39,10 @@ export const roomRouter = createRouter()
     input: z.object({
       userId: z.string(),
       roomId: z.string(),
-      estimate: z.string()
+      value: z.string()
     }),
     async resolve({ ctx, input }) {
-      const { userId, roomId, estimate } = input;
+      const { userId, roomId, value } = input;
 
       console.log("submit-estimate: " + JSON.stringify(input));
 
@@ -54,10 +54,10 @@ export const roomRouter = createRouter()
               where: { userId: userId },
               create: {
                 userId: userId,
-                value: estimate
+                value: value
               },
               update: {
-                value: estimate
+                value: value
               }
             }
           }

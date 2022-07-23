@@ -4,43 +4,46 @@ import { trpc } from "../utils/trpc";
 import { useUserId } from "../utils/user-id";
 
 const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
-  const estimateOptions = ["?", "0", "0.5", "1", "2", "3", "5", "8", "13", "20", "40", "100"];
+  const estimateValues = ["?", "0", "0.5", "1", "2", "3", "5", "8", "13", "20", "40", "100"];
 
   const userId = useUserId();
-
-  const [estimate, setEstimate] = useState("");
-
+  const [estimateValue, setEstimateValue] = useState("");
   const { data } = trpc.useQuery(["rooms.get-room-estimates", { roomId }]);
+  const { mutate } = trpc.useMutation(["rooms.submit-estimate"]);
+
+  const handleSubmitEstimate = (value: string) => {
+    mutate(
+      { userId, roomId, value },
+      {
+        onSuccess: () => {
+          toast.success("Estimate submitted");
+        },
+        onError: () => {
+          toast.error("Oops something went wrong");
+        }
+      }
+    );
+    setEstimateValue(value);
+  };
 
   useEffect(() => {
-    if (data) {
-      const estimate = data.estimate.find(({ userId: id }) => id === userId);
-      if (estimate) {
-        setEstimate(estimate.value);
-      }
-    }
+    const estimate = data?.estimate.find(({ userId: id }) => id === userId);
+    setEstimateValue(estimate?.value || "");
   }, [data, userId]);
-
-  const { mutateAsync } = trpc.useMutation(["rooms.submit-estimate"]);
 
   return (
     <section className="flex flex-col gap-5">
       <h1 className="font-semibold text-lg">Submit estimate</h1>
       <div className="grid grid-cols-5 md:grid-cols-6 gap-2 md:gap-4">
-        {estimateOptions.map((option) => (
+        {estimateValues.map((value) => (
           <button
-            key={option}
+            key={value}
             className={`aspect-2/3 border border-violet-500 ${
-              estimate === option ? "bg-violet-500 text-white" : ""
+              estimateValue === value ? "bg-violet-500 text-white" : ""
             } hover:bg-violet-500 hover:text-white rounded grid items-center justify-center text-xl md:text-5xl cursor-pointer`}
-            onClick={() => {
-              mutateAsync({ userId, roomId, estimate: option })
-                .catch(() => toast.error("Oops something went wrong"))
-                .then(() => toast.success("Estimate submitted"));
-              setEstimate(option);
-            }}
+            onClick={() => handleSubmitEstimate(value)}
           >
-            {option}
+            {value}
           </button>
         ))}
       </div>
