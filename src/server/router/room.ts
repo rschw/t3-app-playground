@@ -96,6 +96,7 @@ export const roomRouter = createRouter()
       await ctx.prisma.room.update({
         where: { id: roomId },
         data: {
+          showEstimates: false,
           estimate: {
             updateMany: {
               where: { roomId: roomId },
@@ -106,5 +107,28 @@ export const roomRouter = createRouter()
       });
 
       await pusherServerClient.trigger(`room-${roomId}`, "estimates-deleted", {});
+    }
+  })
+  .mutation("toggle-show-estimates", {
+    input: z.object({
+      roomId: z.string()
+    }),
+    async resolve({ ctx, input }) {
+      const { roomId } = input;
+
+      console.log("toggle-show-estimates: " + JSON.stringify(input));
+
+      const room = await ctx.prisma.room.findFirst({
+        where: { id: roomId }
+      });
+
+      if (room) {
+        await ctx.prisma.room.update({
+          where: { id: roomId },
+          data: { showEstimates: !room.showEstimates }
+        });
+
+        await pusherServerClient.trigger(`room-${roomId}`, "show-estimates-toggled", {});
+      }
     }
   });

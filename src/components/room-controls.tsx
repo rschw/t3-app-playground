@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 
 const RoomControls: React.FC<{ roomId: string }> = ({ roomId }) => {
   const { mutateAsync } = trpc.useMutation(["rooms.delete-room-estimates"]);
+  const { mutateAsync: toggleShowAsync } = trpc.useMutation(["rooms.toggle-show-estimates"]);
 
   return (
     <section className="flex justify-between text-violet-500">
@@ -20,7 +21,16 @@ const RoomControls: React.FC<{ roomId: string }> = ({ roomId }) => {
       >
         Delete Estimates
       </button>
-      <button className="py-2 px-4 rounded shadow shadow-violet-300">Show</button>
+      <button
+        className="py-2 px-4 rounded shadow shadow-violet-300"
+        onClick={() => {
+          toggleShowAsync({ roomId })
+            .catch(() => toast.error("Oops something went wrong"))
+            .then(() => toast.success("Estimates hidden"));
+        }}
+      >
+        Show
+      </button>
     </section>
   );
 };

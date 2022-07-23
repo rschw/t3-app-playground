@@ -37,15 +37,22 @@ const RoomEstimates: React.FC<{ roomId: string }> = ({ roomId }) => {
       refetch();
     }
 
+    const showEstimatesToggled = "show-estimates-toggled";
+    function handleShowEstimatesToggled() {
+      refetch();
+    }
+
     console.log("subsribing to channel");
     const channel = client.subscribe(`room-${roomId}`);
     channel.bind(estimateSubmitted, handleEstimateSubmitted);
     channel.bind(estimatesDeleted, handleEstimatesDeleted);
+    channel.bind(showEstimatesToggled, handleShowEstimatesToggled);
 
     return function cleanup() {
       console.log("cleaning up client");
       channel.unbind(estimateSubmitted, handleEstimateSubmitted);
       channel.unbind(estimatesDeleted, handleEstimatesDeleted);
+      channel.unbind(showEstimatesToggled, handleShowEstimatesToggled);
       channel.disconnect();
     };
   }, [client, roomId, refetch]);
@@ -67,7 +74,9 @@ const RoomEstimates: React.FC<{ roomId: string }> = ({ roomId }) => {
           {data?.estimate.map((estimate) => (
             <tr key={estimate.id}>
               <td className="border-b border-violet-100 p-4">{estimate.userId}</td>
-              <td className="border-b border-violet-100 p-4">{estimate.value}</td>
+              <td className="border-b border-violet-100 p-4">
+                {data.showEstimates ? estimate.value : "#"}
+              </td>
             </tr>
           ))}
         </tbody>

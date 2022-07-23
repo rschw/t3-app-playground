@@ -12,9 +12,10 @@ datasource db {
 }
 
 model Room {
-    id       String     @id @default(cuid())
-    userId   String     @unique
-    estimate Estimate[]
+    id            String     @id @default(cuid())
+    userId        String     @unique
+    showEstimates Boolean    @default(false)
+    estimate      Estimate[]
 }
 
 model Estimate {
