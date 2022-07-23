@@ -1,61 +1,13 @@
-import Pusher from "pusher-js";
-import { useState, useEffect } from "react";
+import { useSubscribeToEvent } from "../utils/pusher";
 import { trpc } from "../utils/trpc";
-import { useUserId } from "../utils/user-id";
 import RoomControls from "./room-controls";
-
-const pusher_key = process.env.NEXT_PUBLIC_PUSHER_APP_KEY!;
-const pusher_host = process.env.NEXT_PUBLIC_PUSHER_APP_HOST!;
-const pusher_port = parseInt(process.env.NEXT_PUBLIC_PUSHER_APP_PORT!);
 
 const RoomEstimates: React.FC<{ roomId: string }> = ({ roomId }) => {
   const { data, isLoading, refetch } = trpc.useQuery(["rooms.get-room-estimates", { roomId }]);
 
-  const userId = useUserId();
-
-  const [client] = useState(
-    new Pusher(pusher_key, {
-      wsHost: pusher_host,
-      wsPort: pusher_port,
-      forceTLS: false,
-      enabledTransports: ["ws", "wss"],
-      authEndpoint: "/api/pusher/auth-channel",
-      auth: {
-        headers: { user_id: userId }
-      }
-    })
-  );
-
-  useEffect(() => {
-    const estimateSubmitted = "estimate-submitted";
-    function handleEstimateSubmitted() {
-      refetch();
-    }
-
-    const estimatesDeleted = "estimates-deleted";
-    function handleEstimatesDeleted() {
-      refetch();
-    }
-
-    const showEstimatesToggled = "show-estimates-toggled";
-    function handleShowEstimatesToggled() {
-      refetch();
-    }
-
-    console.log("subsribing to channel");
-    const channel = client.subscribe(`room-${roomId}`);
-    channel.bind(estimateSubmitted, handleEstimateSubmitted);
-    channel.bind(estimatesDeleted, handleEstimatesDeleted);
-    channel.bind(showEstimatesToggled, handleShowEstimatesToggled);
-
-    return function cleanup() {
-      console.log("cleaning up client");
-      channel.unbind(estimateSubmitted, handleEstimateSubmitted);
-      channel.unbind(estimatesDeleted, handleEstimatesDeleted);
-      channel.unbind(showEstimatesToggled, handleShowEstimatesToggled);
-      channel.disconnect();
-    };
-  }, [client, roomId, refetch]);
+  useSubscribeToEvent("estimate-submitted", () => refetch());
+  useSubscribeToEvent("estimates-deleted", () => refetch());
+  useSubscribeToEvent("show-estimates-toggled", () => refetch());
 
   if (isLoading) return null;
 
