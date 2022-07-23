@@ -3,5 +3,5 @@
 @tailwind utilities;
 
 .container {
-  @apply md:max-w-[85ch];
+  @apply md:max-w-[70ch];
 }
