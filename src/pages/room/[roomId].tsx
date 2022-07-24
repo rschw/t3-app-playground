@@ -2,7 +2,7 @@ import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { Toaster } from "react-hot-toast";
 import RoomEstimates from "../../components/room-estimates";
-import ShareRoom from "../../components/share-room";
+import ShareRoom from "../../components/ShareRoom";
 import SubmitEstimate from "../../components/submit-estimate";
 import { PusherProvider } from "../../utils/pusher";
 import { useUserId } from "../../utils/user-id";
