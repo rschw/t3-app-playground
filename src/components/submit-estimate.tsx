@@ -38,7 +38,7 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
             key={value}
             className={`aspect-2/3 border border-violet-500 ${
               estimateValue === value ? "bg-violet-500 text-white" : ""
-            } hover:bg-violet-500 hover:text-white rounded grid items-center justify-center text-xl md:text-5xl cursor-pointer`}
+            } hover:bg-violet-500 hover:text-white rounded grid items-center content-center justify-center text-xl md:text-5xl cursor-pointer`}
             onClick={() => handleSubmitEstimate(value)}
           >
             {value}
