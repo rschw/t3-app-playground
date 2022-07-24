@@ -11,4 +11,4 @@ This is an app bootstrapped according to the [init.tips](https://init.tips) stac
 [] online status
 [x] useEvent hook on client
 [] blog post about trpc stack
-[] investigate mobile submit estimate error
+[x] investigate mobile submit estimate error

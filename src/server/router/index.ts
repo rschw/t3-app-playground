@@ -3,12 +3,10 @@ import { createRouter } from "./context";
 import superjson from "superjson";
 
 import { authRouter } from "./auth";
-import { githubRouter } from "./github";
 import { roomRouter } from "./room";
 
 export const appRouter = createRouter()
   .transformer(superjson)
-  .merge("github.", githubRouter)
   .merge("auth.", authRouter)
   .merge("rooms.", roomRouter);
 
