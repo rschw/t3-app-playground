@@ -13,23 +13,33 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
 
   const userId = useUserId();
   const [userName, setUserName] = useUserName();
-  const [estimateValue, setEstimateValue] = useState("");
-  const { data, refetch } = trpc.proxy.rooms.getById.useQuery({ roomId });
-  const { mutateAsync } = trpc.proxy.rooms.submitEstimate.useMutation();
 
-  const handleSubmitEstimate = async (value: string) => {
-    setEstimateValue(value);
-    await toast.promise(mutateAsync({ userId, userName, roomId, value }), {
-      loading: "Submitting estimate...",
-      success: "Estimate submitted",
-      error: (err) => `Oops something went wrong: ${err}`
-    });
-    await refetch();
-  };
+  const [estimate, setEstimate] = useState("");
+
+  const { data } = trpc.proxy.rooms.getById.useQuery({ roomId });
+
+  const tctx = trpc.useContext();
+  const { mutate: submitEstimate } = trpc.proxy.rooms.submitEstimate.useMutation({
+    onMutate: ({ roomId, value }) => {
+      // optimistic update
+      tctx.queryClient.setQueryData(["rooms.getById", { roomId }], {
+        ...data,
+        estimate: data?.estimate.map((e) => (e.userId === userId ? { ...e, value: value } : e))
+      });
+
+      setEstimate(value);
+    },
+    onSuccess: (_, { value }) => {
+      toast.success(`${value} story points submitted`);
+    },
+    onError: (err) => {
+      toast.error(`Oops, something went wrong: ${err}`);
+    }
+  });
 
   useEffect(() => {
     const estimate = data?.estimate.find(({ userId: id }) => id === userId);
-    setEstimateValue(estimate?.value || "");
+    setEstimate(estimate?.value || "-");
   }, [data, userId]);
 
   return (
@@ -40,9 +50,9 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
           <button
             key={value}
             className={`aspect-2/3 border border-violet-500 ${
-              estimateValue === value ? "bg-violet-500 text-white" : ""
+              estimate === value ? "bg-violet-500 text-white" : ""
             } hover:bg-violet-500 hover:text-white rounded grid items-center content-center justify-center text-xl md:text-5xl cursor-pointer`}
-            onClick={() => handleSubmitEstimate(value)}
+            onClick={() => submitEstimate({ roomId, userId, userName, value })}
           >
             {value}
           </button>
