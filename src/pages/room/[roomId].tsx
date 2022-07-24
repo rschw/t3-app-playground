@@ -81,7 +81,13 @@ const RoomEstimates: React.FC<{ roomId: string }> = ({ roomId }) => {
               <tr key={estimate.id}>
                 <td className="border-b border-violet-100 p-4">{estimate.userId}</td>
                 <td className="border-b border-violet-100 p-4">
-                  {data.showEstimates ? estimate.value : "#"}
+                  {data.showEstimates || estimate.value === "-" ? (
+                    estimate.value
+                  ) : (
+                    <div className="grid items-center content-center justify-center w-5 aspect-2/3 border rounded text-white bg-violet-500">
+                      ✓
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}
