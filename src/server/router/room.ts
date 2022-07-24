@@ -46,23 +46,20 @@ export const roomRouter = createRouter()
 
       console.log("submit-estimate: " + JSON.stringify(input));
 
-      await ctx.prisma.room.update({
-        where: { id: roomId },
-        data: {
-          estimate: {
-            upsert: {
-              where: { userId: userId },
-              create: {
-                userId: userId,
-                value: value
-              },
-              update: {
-                value: value
-              }
-            }
-          }
-        }
+      const existingEstimate = await ctx.prisma.estimate.findFirst({
+        where: { userId: userId, roomId: roomId }
       });
+
+      if (existingEstimate) {
+        await ctx.prisma.estimate.update({
+          where: { id: existingEstimate.id },
+          data: { value: value }
+        });
+      } else {
+        await ctx.prisma.estimate.create({
+          data: { userId: userId, roomId: roomId, value: value }
+        });
+      }
 
       await pusherServerClient.trigger(`room-${roomId}`, "estimate-submitted", {});
     }
