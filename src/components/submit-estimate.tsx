@@ -9,19 +9,17 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
   const userId = useUserId();
   const [estimateValue, setEstimateValue] = useState("");
   const { data } = trpc.useQuery(["rooms.get-room-estimates", { roomId }]);
-  const { mutate } = trpc.useMutation(["rooms.submit-estimate"]);
+  const { mutateAsync } = trpc.useMutation(["rooms.submit-estimate"]);
 
   const handleSubmitEstimate = (value: string) => {
-    mutate(
-      { userId, roomId, value },
+    toast.promise(
+      mutateAsync({ userId, roomId, value }),
       {
-        onSuccess: () => {
-          toast.success("Estimate submitted");
-        },
-        onError: () => {
-          toast.error("Oops something went wrong");
-        }
-      }
+        loading: "Submitting estimate...",
+        success: "Estimate submitted",
+        error: (err) => `Oops something went wrong: ${err}`
+      },
+      { error: { duration: Infinity } }
     );
     setEstimateValue(value);
   };
