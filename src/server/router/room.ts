@@ -38,11 +38,12 @@ export const roomRouter = createRouter()
   .mutation("submit-estimate", {
     input: z.object({
       userId: z.string(),
+      userName: z.string(),
       roomId: z.string(),
       value: z.string()
     }),
     async resolve({ ctx, input }) {
-      const { userId, roomId, value } = input;
+      const { userId, userName, roomId, value } = input;
 
       console.log("submit-estimate: " + JSON.stringify(input));
 
@@ -53,11 +54,11 @@ export const roomRouter = createRouter()
       if (existingEstimate) {
         await ctx.prisma.estimate.update({
           where: { id: existingEstimate.id },
-          data: { value: value }
+          data: { value: value, userName: userName }
         });
       } else {
         await ctx.prisma.estimate.create({
-          data: { userId: userId, roomId: roomId, value: value }
+          data: { userId: userId, userName: userName, roomId: roomId, value: value }
         });
       }
 

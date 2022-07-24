@@ -17,3 +17,21 @@ export function useUserId() {
 
   return userId;
 }
+
+export function useUserName() {
+  const userId = useUserId();
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    const existingName = () => localStorage.getItem("poker:userName");
+    setUserName(existingName() ?? userId);
+  }, [userId, setUserName]);
+
+  useEffect(() => {
+    if (!!userName) {
+      localStorage.setItem("poker:userName", userName);
+    }
+  }, [userName]);
+
+  return [userName, setUserName] as const;
+}

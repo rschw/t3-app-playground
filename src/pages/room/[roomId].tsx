@@ -1,25 +1,25 @@
-import { Estimate } from "@prisma/client";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import { FaUserMinus } from "react-icons/fa";
+import { FaUser, FaUserMinus } from "react-icons/fa";
 import ShareRoom from "../../components/ShareRoom";
 import { PusherProvider, useSubscribeToEvent } from "../../utils/pusher";
 import { trpc } from "../../utils/trpc";
-import { useUserId } from "../../utils/user-id";
+import { useUserId, useUserName } from "../../utils/user-id";
 
 const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
   const estimateValues = ["?", "0", "0.5", "1", "2", "3", "5", "8", "13", "20", "40", "100"];
 
   const userId = useUserId();
+  const [userName, setUserName] = useUserName();
   const [estimateValue, setEstimateValue] = useState("");
   const { data, refetch } = trpc.useQuery(["rooms.get-room-estimates", { roomId }]);
   const { mutateAsync } = trpc.useMutation(["rooms.submit-estimate"]);
 
   const handleSubmitEstimate = async (value: string) => {
     setEstimateValue(value);
-    await toast.promise(mutateAsync({ userId, roomId, value }), {
+    await toast.promise(mutateAsync({ userId, userName, roomId, value }), {
       loading: "Submitting estimate...",
       success: "Estimate submitted",
       error: (err) => `Oops something went wrong: ${err}`
@@ -48,6 +48,19 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
           </button>
         ))}
       </div>
+      <div className="group relative rounded-md">
+        <FaUser
+          size={20}
+          className="absolute left-3 top-1/2 -mt-2.5 text-slate-400 pointeer-events-none group-focus-within:text-violet-500"
+        />
+        <input
+          className="appearance-none text-sm leading-6 bg-transparent text-slate-900 placeholder:text-slate-400 rounded-md py-2 pl-10 ring-1 ring-slate-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+          type="text"
+          placeholder="User name..."
+          value={userName}
+          onChange={(e) => setUserName(e.target.value)}
+        />
+      </div>
     </section>
   );
 };
@@ -72,14 +85,14 @@ const RoomEstimates: React.FC<{ roomId: string }> = ({ roomId }) => {
         </thead>
         <tbody>
           {data?.estimate
-            ?.sort(({ userId: a }, { userId: b }) => {
+            ?.sort(({ userName: a }, { userName: b }) => {
               if (a < b) return -1;
               if (a > b) return 1;
               return 0;
             })
             .map((estimate) => (
               <tr key={estimate.id}>
-                <td className="border-b border-violet-100 p-4">{estimate.userId}</td>
+                <td className="border-b border-violet-100 p-4">{estimate.userName}</td>
                 <td className="border-b border-violet-100 p-4">
                   {data.showEstimates || estimate.value === "-" ? (
                     estimate.value
