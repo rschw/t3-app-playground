@@ -5,3 +5,7 @@
 .container {
   @apply md:max-w-[70ch];
 }
+
+* {
+  @apply transition-colors duration-300 ease-in-out;
+}
