@@ -14,8 +14,8 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
   const userId = useUserId();
   const [userName, setUserName] = useUserName();
   const [estimateValue, setEstimateValue] = useState("");
-  const { data, refetch } = trpc.useQuery(["rooms.get-room-estimates", { roomId }]);
-  const { mutateAsync } = trpc.useMutation(["rooms.submit-estimate"]);
+  const { data, refetch } = trpc.proxy.rooms.getById.useQuery({ roomId });
+  const { mutateAsync } = trpc.proxy.rooms.submitEstimate.useMutation();
 
   const handleSubmitEstimate = async (value: string) => {
     setEstimateValue(value);
@@ -66,7 +66,7 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
 };
 
 const RoomEstimates: React.FC<{ roomId: string }> = ({ roomId }) => {
-  const { data, refetch } = trpc.useQuery(["rooms.get-room-estimates", { roomId }]);
+  const { data, refetch } = trpc.proxy.rooms.getById.useQuery({ roomId });
 
   useSubscribeToEvent("estimate-submitted", () => refetch());
   useSubscribeToEvent("estimates-deleted", () => refetch());
@@ -111,9 +111,9 @@ const RoomEstimates: React.FC<{ roomId: string }> = ({ roomId }) => {
 };
 
 const RoomControls: React.FC<{ roomId: string }> = ({ roomId }) => {
-  const { data, refetch } = trpc.useQuery(["rooms.get-room-estimates", { roomId }]);
-  const { mutateAsync } = trpc.useMutation(["rooms.delete-room-estimates"]);
-  const { mutateAsync: toggleShowAsync } = trpc.useMutation(["rooms.toggle-show-estimates"]);
+  const { data, refetch } = trpc.proxy.rooms.getById.useQuery({ roomId });
+  const { mutateAsync } = trpc.proxy.rooms.deleteEstimates.useMutation();
+  const { mutateAsync: toggleShowAsync } = trpc.proxy.rooms.toggleEstimates.useMutation();
 
   const [visible, setVisible] = useState(false);
 

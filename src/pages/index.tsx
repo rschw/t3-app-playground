@@ -10,9 +10,9 @@ import { FaPiedPiperHat } from "react-icons/fa";
 const MyRoom = () => {
   const userId = useUserId();
 
-  const { data, isLoading, refetch } = trpc.useQuery(["rooms.get-my-room", { userId: userId }]);
+  const { data, isLoading, refetch } = trpc.proxy.rooms.getByUser.useQuery({ userId });
 
-  const { mutateAsync } = trpc.useMutation(["rooms.create-my-room"]);
+  const { mutateAsync } = trpc.proxy.rooms.create.useMutation();
 
   const handleCreateRoom = async () => {
     await toast.promise(mutateAsync({ userId }), {
