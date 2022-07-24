@@ -7,7 +7,7 @@ export function useUserId() {
     const newId = () => Math.floor(Math.random() * 10 ** 6).toString();
     const existingId = () => localStorage.getItem("poker:userId");
     setUserId(existingId() ?? newId());
-  }, [setUserId]);
+  }, []);
 
   useEffect(() => {
     if (!!userId) {
@@ -19,13 +19,12 @@ export function useUserId() {
 }
 
 export function useUserName() {
-  const userId = useUserId();
   const [userName, setUserName] = useState("");
 
   useEffect(() => {
     const existingName = () => localStorage.getItem("poker:userName");
-    setUserName(existingName() ?? userId);
-  }, [userId, setUserName]);
+    setUserName(existingName() ?? "Guest");
+  }, []);
 
   useEffect(() => {
     if (!!userName) {
