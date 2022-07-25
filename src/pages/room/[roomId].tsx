@@ -71,6 +71,9 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
           value={userName}
           onChange={(e) => setUserName(e.target.value)}
         />
+        <span className="ml-4 text-sm text-slate-600">
+          Your name will be visible to others after your next estimation
+        </span>
       </div>
     </section>
   );
