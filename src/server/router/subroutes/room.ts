@@ -129,5 +129,20 @@ export const roomRouter = t.router({
       });
 
       await pusherServerClient.trigger(`room-${roomId}`, "estimates-deleted", {});
+    }),
+  removeUsers: t.procedure
+    .input(
+      z.object({
+        roomId: z.string()
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { roomId } = input;
+
+      await ctx.prisma.estimate.deleteMany({
+        where: { roomId: roomId }
+      });
+
+      await pusherServerClient.trigger(`room-${roomId}`, "estimates-deleted", {});
     })
 });

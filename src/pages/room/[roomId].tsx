@@ -128,6 +128,7 @@ const RoomControls: React.FC<{ roomId: string }> = ({ roomId }) => {
   const { data, refetch } = trpc.proxy.rooms.getById.useQuery({ roomId });
   const { mutateAsync } = trpc.proxy.rooms.deleteEstimates.useMutation();
   const { mutateAsync: toggleShowAsync } = trpc.proxy.rooms.toggleEstimates.useMutation();
+  const { mutateAsync: removeUsers } = trpc.proxy.rooms.removeUsers.useMutation();
 
   const [visible, setVisible] = useState(false);
 
@@ -137,7 +138,14 @@ const RoomControls: React.FC<{ roomId: string }> = ({ roomId }) => {
 
   return (
     <section className="flex justify-between text-violet-500">
-      <button>
+      <button
+        onClick={async () => {
+          await removeUsers({ roomId }).catch((err) =>
+            toast.error(`Oops, something went wrong: ${err}`)
+          );
+          await refetch();
+        }}
+      >
         <FaUserMinus size={20} />
       </button>
       <button
