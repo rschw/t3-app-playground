@@ -24,7 +24,8 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
       // optimistic update
       tctx.queryClient.setQueryData(["rooms.getById", { roomId }], {
         ...data,
-        estimate: data?.estimate.map((e) => (e.userId === userId ? { ...e, value: value } : e))
+        estimate:
+          data?.estimate.map((e) => (e.userId === userId ? { ...e, value: value } : e)) || []
       });
 
       setEstimate(value);
