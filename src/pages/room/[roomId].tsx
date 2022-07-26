@@ -142,6 +142,7 @@ const RoomControls: React.FC<{ roomId: string }> = ({ roomId }) => {
     onMutate: ({ roomId }) => {
       tctx.queryClient.setQueryData(["rooms.getById", { roomId }], {
         ...data,
+        showEstimates: false,
         estimate: data?.estimate.map((e) => ({ ...e, value: "-" }))
       });
     },
