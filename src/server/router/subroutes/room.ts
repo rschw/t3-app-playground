@@ -67,7 +67,7 @@ export const roomRouter = t.router({
         data: { showEstimates: !room.showEstimates }
       });
 
-      await pusherServerClient.trigger(`room-${room.id}`, "show-estimates-toggled", {});
+      await pusherServerClient.trigger(`room-${room.id}`, "room-updated", {});
     }),
   submitEstimate: t.procedure
     .input(
@@ -104,7 +104,7 @@ export const roomRouter = t.router({
         });
       }
 
-      await pusherServerClient.trigger(`room-${roomId}`, "estimate-submitted", {});
+      await pusherServerClient.trigger(`room-${roomId}`, "room-updated", {});
     }),
   deleteEstimates: t.procedure
     .input(
@@ -128,7 +128,7 @@ export const roomRouter = t.router({
         }
       });
 
-      await pusherServerClient.trigger(`room-${roomId}`, "estimates-deleted", {});
+      await pusherServerClient.trigger(`room-${roomId}`, "room-updated", {});
     }),
   removeUsers: t.procedure
     .input(
@@ -143,6 +143,6 @@ export const roomRouter = t.router({
         where: { roomId: roomId }
       });
 
-      await pusherServerClient.trigger(`room-${roomId}`, "estimates-deleted", {});
+      await pusherServerClient.trigger(`room-${roomId}`, "room-updated", {});
     })
 });

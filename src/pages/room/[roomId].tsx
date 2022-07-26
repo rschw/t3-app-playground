@@ -95,9 +95,7 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
 const RoomEstimates: React.FC<{ roomId: string }> = ({ roomId }) => {
   const { data, refetch } = trpc.proxy.rooms.getById.useQuery({ roomId });
 
-  useSubscribeToEvent("estimate-submitted", () => refetch());
-  useSubscribeToEvent("estimates-deleted", () => refetch());
-  useSubscribeToEvent("show-estimates-toggled", () => refetch());
+  useSubscribeToEvent("room-updated", () => refetch());
 
   return (
     <section className="flex flex-col gap-6">
