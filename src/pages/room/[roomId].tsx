@@ -78,15 +78,12 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
           className="absolute left-3 top-1/2 -mt-2.5 text-slate-400 pointeer-events-none group-focus-within:text-violet-500"
         />
         <input
-          className="appearance-none text-sm leading-6 bg-transparent text-slate-900 placeholder:text-slate-400 rounded-md py-2 pl-10 ring-1 ring-slate-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+          className="appearance-none w-full text-sm leading-6 bg-transparent text-slate-900 placeholder:text-slate-400 rounded-md py-2 pl-10 ring-1 ring-slate-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
           type="text"
           placeholder="User name..."
           value={userName}
           onChange={(e) => setUserName(e.target.value)}
         />
-        <span className="ml-4 text-sm text-slate-600">
-          Your name will be visible to others after your next estimation
-        </span>
       </div>
     </section>
   );
