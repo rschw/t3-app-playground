@@ -12,6 +12,7 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
   const estimateValues = ["?", "0", "0.5", "1", "2", "3", "5", "8", "13", "20", "40", "100"];
 
   const userId = useUserId();
+
   const [userName, setUserName] = useUserName();
 
   const [estimate, setEstimate] = useState("");
@@ -19,6 +20,7 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
   const { data } = trpc.proxy.rooms.getById.useQuery({ roomId });
 
   const tctx = trpc.useContext();
+
   const { mutate: submitEstimate } = trpc.proxy.rooms.submitEstimate.useMutation({
     onMutate: ({ roomId, value }) => {
       function optimisticUpdateData() {
@@ -136,10 +138,42 @@ const RoomEstimates: React.FC<{ roomId: string }> = ({ roomId }) => {
 };
 
 const RoomControls: React.FC<{ roomId: string }> = ({ roomId }) => {
-  const { data, refetch } = trpc.proxy.rooms.getById.useQuery({ roomId });
-  const { mutateAsync } = trpc.proxy.rooms.deleteEstimates.useMutation();
-  const { mutateAsync: toggleShowAsync } = trpc.proxy.rooms.toggleEstimates.useMutation();
-  const { mutateAsync: removeUsers } = trpc.proxy.rooms.removeUsers.useMutation();
+  const { data } = trpc.proxy.rooms.getById.useQuery({ roomId });
+
+  const tctx = trpc.useContext();
+
+  const { mutate: deleteEstimates } = trpc.proxy.rooms.deleteEstimates.useMutation({
+    onMutate: ({ roomId }) => {
+      tctx.queryClient.setQueryData(["rooms.getById", { roomId }], {
+        ...data,
+        estimate: data?.estimate.map((e) => ({ ...e, value: "-" }))
+      });
+    },
+    onError(err) {
+      toast.error(`Oops, something went wrong: ${err}`);
+    }
+  });
+
+  const { mutate: toggleShow } = trpc.proxy.rooms.toggleEstimates.useMutation({
+    onMutate: async ({ roomId }) => {
+      tctx.queryClient.setQueriesData(["rooms.getById", { roomId }], {
+        ...data,
+        showEstimates: !data?.showEstimates
+      });
+    },
+    onError(err) {
+      toast.error(`Oops, something went wrong: ${err}`);
+    }
+  });
+
+  const { mutate: removeUsers } = trpc.proxy.rooms.removeUsers.useMutation({
+    onMutate: ({ roomId }) => {
+      tctx.queryClient.setQueryData(["rooms.getById", { roomId }], { ...data, estimate: [] });
+    },
+    onError: (err) => {
+      toast.error(`Oops, something went wrong: ${err}`);
+    }
+  });
 
   const [visible, setVisible] = useState(false);
 
@@ -149,27 +183,14 @@ const RoomControls: React.FC<{ roomId: string }> = ({ roomId }) => {
 
   return (
     <section className="flex justify-between text-violet-500">
-      <button
-        onClick={async () => {
-          await removeUsers({ roomId }).catch((err) =>
-            toast.error(`Oops, something went wrong: ${err}`)
-          );
-          await refetch();
-        }}
-      >
+      <button onClick={() => removeUsers({ roomId })}>
         <FaUserMinus size={20} />
       </button>
       <button
         className={`py-2 px-4 rounded shadow shadow-violet-300 ${
           visible ? "bg-violet-500 text-white" : ""
         }`}
-        onClick={async () => {
-          setVisible(false);
-          await mutateAsync({ roomId }).catch((err) =>
-            toast.error(`Oops something went wrong: ${err}`)
-          );
-          await refetch();
-        }}
+        onClick={() => deleteEstimates({ roomId })}
       >
         Delete Estimates
       </button>
@@ -177,13 +198,7 @@ const RoomControls: React.FC<{ roomId: string }> = ({ roomId }) => {
         className={`py-2 px-4 rounded shadow shadow-violet-300 ${
           !visible ? "bg-violet-500 text-white" : ""
         }`}
-        onClick={async () => {
-          setVisible(!visible);
-          await toggleShowAsync({ roomId }).catch((err) =>
-            toast.error(`Oops something went wrong: ${err}`)
-          );
-          await refetch();
-        }}
+        onClick={() => toggleShow({ roomId })}
       >
         {visible ? "Hide" : "Show"}
       </button>
