@@ -6,16 +6,14 @@ import { FaUser, FaUserMinus } from "react-icons/fa";
 import ShareRoom from "../../components/ShareRoom";
 import { PusherProvider, useSubscribeToEvent } from "../../utils/pusher";
 import { trpc } from "../../utils/trpc";
-import { useUserId, useUserName } from "../../utils/user-id";
+import { useUser } from "../../utils/useUser";
 
 const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
   const estimateValues = ["?", "0", "0.5", "1", "2", "3", "5", "8", "13", "20", "40", "100"];
 
-  const userId = useUserId();
+  const [user, setUser] = useUser();
 
-  const [userName, setUserName] = useUserName();
-
-  const [estimate, setEstimate] = useState("");
+  const [estimate, setEstimate] = useState("-");
 
   const { data } = trpc.proxy.rooms.getById.useQuery({ roomId });
 
@@ -25,15 +23,18 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
     onMutate: ({ roomId, value }) => {
       function optimisticUpdateData() {
         if (data) {
-          const userEstimate = data.estimate.find((e) => e.userId === userId);
+          const userEstimate = data.estimate.find((e) => e.userId === user.id);
 
           if (userEstimate) {
             const patchedEstimates = data.estimate.map((e) =>
-              e.userId === userId ? { ...e, value, userName } : e
+              e.userId === user.id ? { ...e, value, userName: user.name } : e
             );
             return { ...data, estimate: patchedEstimates };
           } else {
-            const patchedEstimates = [...data.estimate, { userId, userName, value }];
+            const patchedEstimates = [
+              ...data.estimate,
+              { userId: user.id, userName: user.name, value }
+            ];
             return { ...data, estimate: patchedEstimates };
           }
         } else {
@@ -52,9 +53,9 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
   });
 
   useEffect(() => {
-    const estimate = data?.estimate.find(({ userId: id }) => id === userId);
+    const estimate = data?.estimate.find(({ userId: id }) => id === user.id);
     setEstimate(estimate?.value || "-");
-  }, [data, userId]);
+  }, [data, user.id]);
 
   return (
     <section className="flex flex-col gap-6">
@@ -66,7 +67,7 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
             className={`aspect-2/3 border border-violet-500 ${
               estimate === value ? "bg-violet-500 text-white" : ""
             } hover:bg-violet-500 hover:text-white rounded grid items-center content-center justify-center text-xl md:text-5xl cursor-pointer`}
-            onClick={() => submitEstimate({ roomId, userId, userName, value })}
+            onClick={() => submitEstimate({ roomId, userId: user.id, userName: user.name, value })}
           >
             {value}
           </button>
@@ -81,8 +82,8 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
           className="appearance-none w-full text-sm leading-6 bg-transparent text-slate-900 placeholder:text-slate-400 rounded-md py-2 pl-10 ring-1 ring-slate-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
           type="text"
           placeholder="User name..."
-          value={userName}
-          onChange={(e) => setUserName(e.target.value)}
+          value={user.name}
+          onChange={(e) => setUser({ ...user, name: e.target.value })}
         />
       </div>
     </section>
@@ -203,7 +204,8 @@ const RoomControls: React.FC<{ roomId: string }> = ({ roomId }) => {
 
 const RoomPage: NextPage = () => {
   const { query } = useRouter();
-  const userId = useUserId();
+
+  const [user] = useUser();
 
   if (!query.roomId || typeof query.roomId !== "string") {
     return null;
@@ -214,7 +216,7 @@ const RoomPage: NextPage = () => {
   return (
     <>
       <main className="px-4 py-10 md:py-20 container mx-auto flex flex-col gap-6 md:gap-12">
-        <PusherProvider userId={userId} roomId={roomId}>
+        <PusherProvider userId={user.id} roomId={roomId}>
           <ShareRoom roomId={roomId} />
           <SubmitEstimate roomId={roomId} />
           <RoomEstimates roomId={roomId} />

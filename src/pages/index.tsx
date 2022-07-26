@@ -4,18 +4,18 @@ import Link from "next/link";
 import toast, { Toaster } from "react-hot-toast";
 import ShareRoom from "../components/ShareRoom";
 import { trpc } from "../utils/trpc";
-import { useUserId } from "../utils/user-id";
 import { FaPiedPiperHat } from "react-icons/fa";
+import { useUser } from "../utils/useUser";
 
 const MyRoom = () => {
-  const userId = useUserId();
+  const [user] = useUser();
 
-  const { data, isLoading, refetch } = trpc.proxy.rooms.getByUser.useQuery({ userId });
+  const { data, isLoading, refetch } = trpc.proxy.rooms.getByUser.useQuery({ userId: user.id });
 
   const { mutateAsync } = trpc.proxy.rooms.create.useMutation();
 
   const handleCreateRoom = async () => {
-    await toast.promise(mutateAsync({ userId }), {
+    await toast.promise(mutateAsync({ userId: user.id }), {
       loading: "Getting you room ready...",
       success: "All done! Your room is ready.",
       error: (err) => `Oops something went wrong: ${err}`
