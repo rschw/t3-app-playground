@@ -21,14 +21,25 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
   const tctx = trpc.useContext();
   const { mutate: submitEstimate } = trpc.proxy.rooms.submitEstimate.useMutation({
     onMutate: ({ roomId, value }) => {
-      // optimistic update
-      tctx.queryClient.setQueryData(["rooms.getById", { roomId }], {
-        ...data,
-        estimate:
-          data?.estimate.map((e) => (e.userId === userId ? { ...e, value: value } : e)) || []
-      });
+      function optimisticUpdateData() {
+        if (data) {
+          const userEstimate = data.estimate.find((e) => e.userId === userId);
 
-      setEstimate(value);
+          if (userEstimate) {
+            const patchedEstimates = data.estimate.map((e) =>
+              e.userId === userId ? { ...e, value, userName } : e
+            );
+            return { ...data, estimate: patchedEstimates };
+          } else {
+            const patchedEstimates = [...data.estimate, { userId, userName, value }];
+            return { ...data, estimate: patchedEstimates };
+          }
+        } else {
+          return data;
+        }
+      }
+
+      tctx.queryClient.setQueryData(["rooms.getById", { roomId }], optimisticUpdateData());
     },
     onSuccess: (_, { value }) => {
       toast.success(`${value} story points submitted`);
