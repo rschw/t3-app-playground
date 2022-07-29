@@ -4,12 +4,14 @@ This is an app bootstrapped according to the [init.tips](https://init.tips) stac
 
 ## TODO
 
-[x] optimistic update when submitting estimations
-[x] better initial loading text on app screen
-[x] show/hide estimations
-[x] username input
-[] online status
-[x] useEvent hook on client
-[] blog post about trpc stack
-[x] investigate mobile submit estimate error
-[x] Safari card values not centered
+- [x] optimistic update when submitting estimations
+- [x] better initial loading text on app screen
+- [x] show/hide estimations
+- [x] username input
+- [] online status
+- [x] useEvent hook on client
+- [] blog post about trpc stack
+- [x] investigate mobile submit estimate error
+- [x] Safari card values not centered
+
+`npx @soketi/soketi start` to start a local ws server
