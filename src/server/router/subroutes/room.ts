@@ -11,11 +11,9 @@ export const roomRouter = t.router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const room = await ctx.prisma.room.create({
+      return await ctx.prisma.room.create({
         data: { userId: input.userId }
       });
-
-      return room;
     }),
   getById: t.procedure
     .input(
@@ -24,12 +22,10 @@ export const roomRouter = t.router({
       })
     )
     .query(async ({ ctx, input }) => {
-      const room = await ctx.prisma.room.findFirst({
+      return await ctx.prisma.room.findFirst({
         where: { id: input.roomId },
         include: { estimate: true }
       });
-
-      return room;
     }),
   getByUser: t.procedure
     .input(
@@ -38,11 +34,10 @@ export const roomRouter = t.router({
       })
     )
     .query(async ({ ctx, input }) => {
-      const room = await ctx.prisma.room.findFirst({
-        where: { userId: input.userId }
+      return await ctx.prisma.room.findFirst({
+        where: { userId: input.userId },
+        include: { estimate: true }
       });
-
-      return room;
     }),
   toggleEstimates: t.procedure
     .input(

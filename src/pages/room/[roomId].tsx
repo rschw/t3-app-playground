@@ -9,65 +9,40 @@ import { trpc } from "../../utils/trpc";
 import { useUser } from "../../utils/useUser";
 
 const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
-  const estimateValues = ["?", "0", "0.5", "1", "2", "3", "5", "8", "13", "20", "40", "100"];
+  const estimates = ["?", "0", "0.5", "1", "2", "3", "5", "8", "13", "20", "40", "100"];
 
   const [user, setUser] = useUser();
-
-  const [estimate, setEstimate] = useState("-");
+  const [toastId, setToastId] = useState("");
 
   const { data } = trpc.proxy.rooms.getById.useQuery({ roomId });
 
-  const tctx = trpc.useContext();
+  const getUserEstimate = () => data?.estimate.find((e) => e.userId === user.id)?.value;
 
-  const { mutate: submitEstimate } = trpc.proxy.rooms.submitEstimate.useMutation({
-    onMutate: ({ roomId, value }) => {
-      function optimisticUpdateData() {
-        if (data) {
-          const userEstimate = data.estimate.find((e) => e.userId === user.id);
-
-          if (userEstimate) {
-            const patchedEstimates = data.estimate.map((e) =>
-              e.userId === user.id ? { ...e, value, userName: user.name } : e
-            );
-            return { ...data, estimate: patchedEstimates };
-          } else {
-            const patchedEstimates = [
-              ...data.estimate,
-              { userId: user.id, userName: user.name, value }
-            ];
-            return { ...data, estimate: patchedEstimates };
-          }
-        } else {
-          return data;
-        }
+  const { mutate } = trpc.proxy.rooms.submitEstimate.useMutation({
+    onMutate: ({ value }) => {
+      if (toastId) {
+        toast.dismiss(toastId);
       }
-
-      tctx.queryClient.setQueryData(["rooms.getById", { roomId }], optimisticUpdateData());
-    },
-    onSuccess: (_, { value }) => {
-      toast.success(`${value} story points submitted`);
-    },
-    onError: (err) => {
-      toast.error(`Oops, something went wrong: ${err}`);
+      setToastId(toast.success(`${value} story points submitted!`));
     }
   });
 
-  useEffect(() => {
-    const estimate = data?.estimate.find(({ userId: id }) => id === user.id);
-    setEstimate(estimate?.value || "-");
-  }, [data, user.id]);
+  const handleSubmit = (value: string) => {
+    const { id: userId, name: userName } = user;
+    mutate({ roomId, userId, userName, value });
+  };
 
   return (
     <section className="flex flex-col gap-6">
       <h1 className="font-semibold text-lg">Submit estimate</h1>
       <div className="grid grid-cols-6 gap-2 md:gap-4">
-        {estimateValues.map((value) => (
+        {estimates.map((value) => (
           <button
             key={value}
             className={`aspect-2/3 border border-violet-500 ${
-              estimate === value ? "bg-violet-500 text-white" : ""
+              getUserEstimate() === value ? "bg-violet-500 text-white" : ""
             } hover:bg-violet-500 hover:text-white rounded grid items-center content-center justify-center text-xl md:text-5xl cursor-pointer`}
-            onClick={() => submitEstimate({ roomId, userId: user.id, userName: user.name, value })}
+            onClick={() => handleSubmit(value)}
           >
             {value}
           </button>
@@ -91,9 +66,7 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
 };
 
 const RoomEstimates: React.FC<{ roomId: string }> = ({ roomId }) => {
-  const { data, refetch } = trpc.proxy.rooms.getById.useQuery({ roomId });
-
-  useSubscribeToEvent("room-updated", () => refetch());
+  const { data } = trpc.proxy.rooms.getById.useQuery({ roomId });
 
   return (
     <section className="flex flex-col gap-6">
@@ -136,47 +109,9 @@ const RoomEstimates: React.FC<{ roomId: string }> = ({ roomId }) => {
 const RoomControls: React.FC<{ roomId: string }> = ({ roomId }) => {
   const { data } = trpc.proxy.rooms.getById.useQuery({ roomId });
 
-  const tctx = trpc.useContext();
-
-  const { mutate: deleteEstimates } = trpc.proxy.rooms.deleteEstimates.useMutation({
-    onMutate: ({ roomId }) => {
-      tctx.queryClient.setQueryData(["rooms.getById", { roomId }], {
-        ...data,
-        showEstimates: false,
-        estimate: data?.estimate.map((e) => ({ ...e, value: "-" }))
-      });
-    },
-    onError(err) {
-      toast.error(`Oops, something went wrong: ${err}`);
-    }
-  });
-
-  const { mutate: toggleShow } = trpc.proxy.rooms.toggleEstimates.useMutation({
-    onMutate: async ({ roomId }) => {
-      tctx.queryClient.setQueriesData(["rooms.getById", { roomId }], {
-        ...data,
-        showEstimates: !data?.showEstimates
-      });
-    },
-    onError(err) {
-      toast.error(`Oops, something went wrong: ${err}`);
-    }
-  });
-
-  const { mutate: removeUsers } = trpc.proxy.rooms.removeUsers.useMutation({
-    onMutate: ({ roomId }) => {
-      tctx.queryClient.setQueryData(["rooms.getById", { roomId }], { ...data, estimate: [] });
-    },
-    onError: (err) => {
-      toast.error(`Oops, something went wrong: ${err}`);
-    }
-  });
-
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    setVisible(data?.showEstimates ?? false);
-  }, [data]);
+  const { mutate: deleteEstimates } = trpc.proxy.rooms.deleteEstimates.useMutation();
+  const { mutate: toggleShow } = trpc.proxy.rooms.toggleEstimates.useMutation();
+  const { mutate: removeUsers } = trpc.proxy.rooms.removeUsers.useMutation();
 
   return (
     <section className="flex justify-between text-violet-500">
@@ -185,7 +120,7 @@ const RoomControls: React.FC<{ roomId: string }> = ({ roomId }) => {
       </button>
       <button
         className={`py-2 px-4 rounded shadow shadow-violet-300 ${
-          visible ? "bg-violet-500 text-white" : ""
+          data?.showEstimates === true ? "bg-violet-500 text-white" : ""
         }`}
         onClick={() => deleteEstimates({ roomId })}
       >
@@ -193,13 +128,27 @@ const RoomControls: React.FC<{ roomId: string }> = ({ roomId }) => {
       </button>
       <button
         className={`py-2 px-4 rounded shadow shadow-violet-300 ${
-          !visible ? "bg-violet-500 text-white" : ""
+          data?.showEstimates === false ? "bg-violet-500 text-white" : ""
         }`}
         onClick={() => toggleShow({ roomId })}
       >
-        {visible ? "Hide" : "Show"}
+        {data?.showEstimates === true ? "Hide" : "Show"}
       </button>
     </section>
+  );
+};
+
+const RoomPageCore: React.FC<{ roomId: string }> = ({ roomId }) => {
+  const { refetch } = trpc.proxy.rooms.getById.useQuery({ roomId });
+
+  useSubscribeToEvent("room-updated", () => refetch());
+
+  return (
+    <>
+      <ShareRoom roomId={roomId} />
+      <SubmitEstimate roomId={roomId} />
+      <RoomEstimates roomId={roomId} />
+    </>
   );
 };
 
@@ -218,9 +167,7 @@ const RoomPage: NextPage = () => {
     <>
       <main className="px-4 py-10 md:py-20 container mx-auto flex flex-col gap-6 md:gap-12">
         <PusherProvider userId={user.id} roomId={roomId}>
-          <ShareRoom roomId={roomId} />
-          <SubmitEstimate roomId={roomId} />
-          <RoomEstimates roomId={roomId} />
+          <RoomPageCore roomId={roomId} />
         </PusherProvider>
         <Toaster />
       </main>
