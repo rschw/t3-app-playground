@@ -148,7 +148,7 @@ const RoomControls: React.FC<{ roomId: string }> = ({ roomId }) => {
   return (
     <section className="flex justify-between text-violet-500">
       <button onClick={() => handleRemoveUsers()}>
-        <FaUserMinus size={20} />
+        <FaUserMinus size={24} />
       </button>
       <button
         className={`py-2 px-4 rounded shadow shadow-violet-300 ${
