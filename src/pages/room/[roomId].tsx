@@ -1,6 +1,5 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { FaUser, FaUserMinus } from "react-icons/fa";
 import ShareRoom from "../../components/ShareRoom";
@@ -10,26 +9,23 @@ import { useUser } from "../../utils/useUser";
 
 const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
   const estimates = ["?", "0", "0.5", "1", "2", "3", "5", "8", "13", "20", "40", "100"];
-
   const [user, setUser] = useUser();
-  const [toastId, setToastId] = useState("");
-
   const { data } = trpc.proxy.rooms.getById.useQuery({ roomId });
 
   const getUserEstimate = () => data?.estimate.find((e) => e.userId === user.id)?.value;
 
-  const { mutate } = trpc.proxy.rooms.submitEstimate.useMutation({
-    onMutate: ({ value }) => {
-      if (toastId) {
-        toast.dismiss(toastId);
-      }
-      setToastId(toast.success(`${value} story points submitted!`));
-    }
-  });
+  const { mutateAsync: submitEstimateAsync, isLoading: isSubmittingEstimate } =
+    trpc.proxy.rooms.submitEstimate.useMutation();
 
   const handleSubmit = (value: string) => {
-    const { id: userId, name: userName } = user;
-    mutate({ roomId, userId, userName, value });
+    if (!isSubmittingEstimate) {
+      const { id: userId, name: userName } = user;
+      toast.promise(submitEstimateAsync({ roomId, userId, userName, value }), {
+        loading: "Submitting estimate..",
+        success: `${value} story points submitted!`,
+        error: "Oops, something went wrong!"
+      });
+    }
   };
 
   return (
@@ -109,20 +105,56 @@ const RoomEstimates: React.FC<{ roomId: string }> = ({ roomId }) => {
 const RoomControls: React.FC<{ roomId: string }> = ({ roomId }) => {
   const { data } = trpc.proxy.rooms.getById.useQuery({ roomId });
 
-  const { mutate: deleteEstimates } = trpc.proxy.rooms.deleteEstimates.useMutation();
-  const { mutate: toggleShow } = trpc.proxy.rooms.toggleEstimates.useMutation();
-  const { mutate: removeUsers } = trpc.proxy.rooms.removeUsers.useMutation();
+  const { mutateAsync: deleteAsync, isLoading: isDeleting } =
+    trpc.proxy.rooms.deleteEstimates.useMutation();
+
+  const { mutateAsync: showAsync, isLoading: isToggling } =
+    trpc.proxy.rooms.showOrHide.useMutation();
+
+  const { mutateAsync: removeAsync, isLoading: isRemoving } =
+    trpc.proxy.rooms.removeUsers.useMutation();
+
+  const handleDeleteEstimates = () => {
+    if (!isDeleting) {
+      toast.promise(deleteAsync({ roomId }), {
+        loading: "Deleting estimates..",
+        success: "Estimates deleted!",
+        error: "Oops, something went wrong!"
+      });
+    }
+  };
+
+  const handleShowOrHide = () => {
+    if (!isToggling) {
+      const showEstimates = data?.showEstimates ? false : true;
+      toast.promise(showAsync({ roomId, showEstimates }), {
+        loading: showEstimates ? "Showing estimates.." : "Hiding estimates..",
+        success: showEstimates ? "Estimates shown!" : "Estimates hidden!",
+        error: "Oops, something went wrong!"
+      });
+    }
+  };
+
+  const handleRemoveUsers = () => {
+    if (!isRemoving) {
+      toast.promise(removeAsync({ roomId }), {
+        loading: "Removing users..",
+        success: "Users removed!",
+        error: "Oops, something went wrong!"
+      });
+    }
+  };
 
   return (
     <section className="flex justify-between text-violet-500">
-      <button onClick={() => removeUsers({ roomId })}>
+      <button onClick={() => handleRemoveUsers()}>
         <FaUserMinus size={20} />
       </button>
       <button
         className={`py-2 px-4 rounded shadow shadow-violet-300 ${
           data?.showEstimates === true ? "bg-violet-500 text-white" : ""
         }`}
-        onClick={() => deleteEstimates({ roomId })}
+        onClick={() => handleDeleteEstimates()}
       >
         Delete Estimates
       </button>
@@ -130,7 +162,7 @@ const RoomControls: React.FC<{ roomId: string }> = ({ roomId }) => {
         className={`py-2 px-4 rounded shadow shadow-violet-300 ${
           data?.showEstimates === false ? "bg-violet-500 text-white" : ""
         }`}
-        onClick={() => toggleShow({ roomId })}
+        onClick={() => handleShowOrHide()}
       >
         {data?.showEstimates === true ? "Hide" : "Show"}
       </button>

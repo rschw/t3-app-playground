@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { pusherServerClient } from "../../common/pusher";
 import { t } from "../trpc";
+import { timedProcedure } from "../utils/timed-procedure";
 
 export const roomRouter = t.router({
   create: t.procedure
@@ -15,6 +16,7 @@ export const roomRouter = t.router({
         data: { userId: input.userId }
       });
     }),
+
   getById: t.procedure
     .input(
       z.object({
@@ -27,6 +29,7 @@ export const roomRouter = t.router({
         include: { estimate: true }
       });
     }),
+
   getByUser: t.procedure
     .input(
       z.object({
@@ -39,32 +42,8 @@ export const roomRouter = t.router({
         include: { estimate: true }
       });
     }),
-  toggleEstimates: t.procedure
-    .input(
-      z.object({
-        roomId: z.string()
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const room = await ctx.prisma.room.findFirst({
-        where: { id: input.roomId }
-      });
 
-      if (!room) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "ROOM NOT FOUND"
-        });
-      }
-
-      await ctx.prisma.room.update({
-        where: { id: room.id },
-        data: { showEstimates: !room.showEstimates }
-      });
-
-      await pusherServerClient.trigger(`room-${room.id}`, "room-updated", {});
-    }),
-  submitEstimate: t.procedure
+  submitEstimate: timedProcedure
     .input(
       z.object({
         roomId: z.string(),
@@ -101,6 +80,25 @@ export const roomRouter = t.router({
 
       await pusherServerClient.trigger(`room-${roomId}`, "room-updated", {});
     }),
+
+  showOrHide: t.procedure
+    .input(
+      z.object({
+        roomId: z.string(),
+        showEstimates: z.boolean()
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { roomId, showEstimates } = input;
+
+      await ctx.prisma.room.update({
+        where: { id: roomId },
+        data: { showEstimates: showEstimates }
+      });
+
+      await pusherServerClient.trigger(`room-${roomId}`, "room-updated", {});
+    }),
+
   deleteEstimates: t.procedure
     .input(
       z.object({
@@ -125,6 +123,7 @@ export const roomRouter = t.router({
 
       await pusherServerClient.trigger(`room-${roomId}`, "room-updated", {});
     }),
+
   removeUsers: t.procedure
     .input(
       z.object({
