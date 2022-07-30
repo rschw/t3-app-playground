@@ -14,14 +14,16 @@ export function useUser() {
     const localId = localStorage.getItem("userId");
     const localName = localStorage.getItem("userName");
 
+    const userId = () => (localId === null || localId === defaultUser.id ? randomId() : localId);
+
     setUser({
-      id: localId ?? randomId(),
+      id: userId(),
       name: localName ?? "Guest"
     });
   }, []);
 
   useEffect(() => {
-    if (user) {
+    if (user && user.id !== defaultUser.id) {
       localStorage.setItem("userId", user.id);
       localStorage.setItem("userName", user.name);
     }
