@@ -8,13 +8,10 @@ What got me interested in playing around with the T3-Stack is the powerful setup
 
 I had so much fun with it that I ended up building a small scrum poker app. Here is what it looks like on a phone.
 
-<div style="display:grid;grid-template-columns:repeat(3, minmax(0, 1fr));gap:1rem;margin:2rem;">
-    <img src="docs/screen1.png" alt="Create Your Room" />
-    <img src="docs/screen2.png" alt="Enter Your Room" />
-    <img src="docs/screen3.png" alt="Room View" />
-    <img src="docs/screen4.png" alt="Estimation" />
-    <img src="docs/screen5.png" alt="Estimates" />
-</div>
+|                                       |                                      |                                |
+| ------------------------------------- | ------------------------------------ | ------------------------------ |
+| ![Create Your Room](docs/screen1.png) | ![Enter Your Room](docs/screen2.png) | ![Room View](docs/screen3.png) |
+| ![Estimation](docs/screen4.png)       | ![Estimates](docs/screen5.png)       |                                |
 
 ## Getting Started
 
