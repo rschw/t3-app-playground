@@ -108,8 +108,8 @@ const RoomControls: React.FC<{ roomId: string }> = ({ roomId }) => {
   const { mutateAsync: deleteAsync, isLoading: isDeleting } =
     trpc.proxy.rooms.deleteEstimates.useMutation();
 
-  const { mutateAsync: showAsync, isLoading: isToggling } =
-    trpc.proxy.rooms.showOrHide.useMutation();
+  const { mutateAsync: showOrHideAsync, isLoading: isShowingOrHiding } =
+    trpc.proxy.rooms.showOrHideEstimates.useMutation();
 
   const { mutateAsync: removeAsync, isLoading: isRemoving } =
     trpc.proxy.rooms.removeUsers.useMutation();
@@ -124,10 +124,10 @@ const RoomControls: React.FC<{ roomId: string }> = ({ roomId }) => {
     }
   };
 
-  const handleShowOrHide = () => {
-    if (!isToggling) {
+  const handleShowOrHideEstimates = () => {
+    if (!isShowingOrHiding) {
       const showEstimates = data?.showEstimates ? false : true;
-      toast.promise(showAsync({ roomId, showEstimates }), {
+      toast.promise(showOrHideAsync({ roomId, showEstimates }), {
         loading: showEstimates ? "Showing estimates.." : "Hiding estimates..",
         success: showEstimates ? "Estimates shown!" : "Estimates hidden!",
         error: "Oops, something went wrong!"
@@ -162,7 +162,7 @@ const RoomControls: React.FC<{ roomId: string }> = ({ roomId }) => {
         className={`py-2 px-4 rounded shadow shadow-violet-300 ${
           data?.showEstimates === false ? "bg-violet-500 text-white" : ""
         }`}
-        onClick={() => handleShowOrHide()}
+        onClick={() => handleShowOrHideEstimates()}
       >
         {data?.showEstimates === true ? "Hide" : "Show"}
       </button>

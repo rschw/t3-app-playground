@@ -1,4 +1,3 @@
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { pusherServerClient } from "../../common/pusher";
 import { t } from "../trpc";
@@ -81,7 +80,7 @@ export const roomRouter = t.router({
       await pusherServerClient.trigger(`room-${roomId}`, "room-updated", {});
     }),
 
-  showOrHide: t.procedure
+  showOrHideEstimates: t.procedure
     .input(
       z.object({
         roomId: z.string(),
