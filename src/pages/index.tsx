@@ -18,7 +18,7 @@ const MyRoom = () => {
     await toast.promise(mutateAsync({ userId: user.id }), {
       loading: "Getting you room ready...",
       success: "All done! Your room is ready.",
-      error: (err) => `Oops something went wrong: ${err}`
+      error: "Oops something went wrong!"
     });
     await refetch();
   };
