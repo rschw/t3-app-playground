@@ -2,8 +2,9 @@ import { NextPage } from "next";
 import { useRouter } from "next/router";
 import toast, { Toaster } from "react-hot-toast";
 import { FaUser, FaUserMinus } from "react-icons/fa";
+import OnlineDot from "../../components/OnlineDot";
 import ShareRoom from "../../components/ShareRoom";
-import { PusherProvider, useSubscribeToEvent } from "../../utils/pusher";
+import { PusherProvider, useCurrentMemberIds, useSubscribeToEvent } from "../../utils/pusher";
 import { trpc } from "../../utils/trpc";
 import { useUser } from "../../utils/useUser";
 
@@ -64,6 +65,8 @@ const SubmitEstimate: React.FC<{ roomId: string }> = ({ roomId }) => {
 const RoomEstimates: React.FC<{ roomId: string }> = ({ roomId }) => {
   const { data } = trpc.proxy.rooms.getById.useQuery({ roomId });
 
+  const onlineUserIds = useCurrentMemberIds();
+
   return (
     <section className="flex flex-col gap-6">
       <h1 className="font-semibold text-lg">Results</h1>
@@ -84,7 +87,10 @@ const RoomEstimates: React.FC<{ roomId: string }> = ({ roomId }) => {
             })
             .map((estimate) => (
               <tr key={estimate.id}>
-                <td className="border-b border-violet-100 p-4">{estimate.userName}</td>
+                <td className="border-b border-violet-100 p-4">
+                  <OnlineDot isOnline={onlineUserIds.includes(estimate.userId)} />
+                  {estimate.userName}
+                </td>
                 <td className="border-b border-violet-100 p-4">
                   {data.showEstimates || estimate.value === "-" ? (
                     estimate.value

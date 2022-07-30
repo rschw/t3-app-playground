@@ -1,4 +1,4 @@
-import Pusher, { Channel } from "pusher-js";
+import Pusher, { Channel, PresenceChannel } from "pusher-js";
 import vanillaCreate, { StoreApi } from "zustand/vanilla";
 import createContext from "zustand/context";
 import { useEffect, useState } from "react";
@@ -11,6 +11,8 @@ const pusher_port = parseInt(process.env.NEXT_PUBLIC_PUSHER_APP_PORT!, 10);
 interface PusherZustandStore {
   pusherClient: Pusher;
   channel: Channel;
+  presenceChannel: PresenceChannel;
+  members: Map<string, any>;
 }
 
 /**
@@ -21,11 +23,9 @@ interface PusherZustandStore {
 const createPusherStore = (userId: string, roomId: string) => {
   let pusherClient: Pusher;
   if (Pusher.instances.length) {
-    console.log("re-using client");
     pusherClient = Pusher.instances[0] as Pusher;
     pusherClient.connect();
   } else {
-    console.log("creating new client");
     pusherClient = new Pusher(pusher_key, {
       wsHost: pusher_host,
       wsPort: pusher_port,
@@ -40,12 +40,26 @@ const createPusherStore = (userId: string, roomId: string) => {
 
   const channel = pusherClient.subscribe(`room-${roomId}`);
 
+  const presenceChannel = pusherClient.subscribe(`presence-${roomId}`) as PresenceChannel;
+
   const store = vanillaCreate<PusherZustandStore>(() => {
     return {
       pusherClient,
-      channel
+      channel,
+      presenceChannel,
+      members: new Map()
     };
   });
+
+  const updateMembers = () => {
+    store.setState(() => ({
+      members: new Map(Object.entries(presenceChannel.members.members))
+    }));
+  };
+
+  presenceChannel.bind("pusher:subscription_succeeded", updateMembers);
+  presenceChannel.bind("pusher:member_added", updateMembers);
+  presenceChannel.bind("pusher:member_removed", updateMembers);
 
   return store;
 };
@@ -110,3 +124,5 @@ export function useSubscribeToEvent<MessageType>(
     };
   }, [channel, eventName]);
 }
+
+export const useCurrentMemberIds = () => usePusherZustandStore((s) => Array.from(s.members.keys()));
