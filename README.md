@@ -4,14 +4,20 @@ This is an app bootstrapped according to the [init.tips](https://init.tips) stac
 
 ## The Playground
 
-What got me interested in playing around with the T3-Stack is the powerful setup you get when bootstrapping a new project using `npx create-t3-app@latest`. Still the most interesting part for me was that it includes [tRPC](https://trpc.io/). tRPC promises easy end-to-end typesafe APIs and in fact it delivered and the developer experience feels seamless.
+This is my playground repository where I gathered first experiences with the T3-Stack and coming with it things new to me like, Next.js, Prism, Pusher, Soketi and React.
 
-I had so much fun with it that I ended up building a small scrum poker app. Here is what it looks like on a phone.
+What got me interested in playing around with the T3-Stack is the powerful setup you get when bootstrapping a new project using `npx create-t3-app@latest`. Still the most interesting part for me was that I learned that it includes [tRPC](https://trpc.io/), which promises easy end-to-end typesafe APIs and a great developer experience. The whole package sounded like an interesting and holistic stack to me so I had to try it out.
+
+The first steps with tRPC and Next.js were so easy and I had so much fun with it that I ended up building a small scrum poker app. Here is what it looks like on a phone.
 
 |                                       |                                      |                                |
 | ------------------------------------- | ------------------------------------ | ------------------------------ |
 | ![Create Your Room](docs/screen1.png) | ![Enter Your Room](docs/screen2.png) | ![Room View](docs/screen3.png) |
 | ![Estimation](docs/screen4.png)       | ![Estimates](docs/screen5.png)       |                                |
+
+I still had to spend quite some time digging into the documentation about React Hooks and Next.js because I did not yet have a good understanding of page pre-rendering in a static generation and client side rendering context. Especially finding a way to ensure that some page components or code is never run on the server.
+
+![Architecture](docs/architecture.png)
 
 ## Getting Started
 
@@ -47,10 +53,11 @@ Run `npm run dev` to start the Next.js dev server.
 
 ## Links
 
-- [Create T3 App](https://create.t3.gg/) T3-Stack starter
-- [tRPC](https://trpc.io/) end-to-end typesafe APIs made easy
-- [Soketi](https://soketi.app/) a open-source realtime WebSockets server
-- [Pusher](https://pusher.com/) client api connect with `soketi`
-- [Vercel](https://vercel.com/) to deploy your `Next.js` app
-- [Railway](https://railway.app/) to deploy instance of `postgres` and `soketi`
-- [TailwindCSS](https://tailwindcss.com/) utility based css
+- [Create T3 App](https://create.t3.gg/)
+- [Next.js](https://nextjs.org/)
+- [tRPC](https://trpc.io/)
+- [Soketi](https://soketi.app/)
+- [Pusher](https://pusher.com/)
+- [Vercel](https://vercel.com/)
+- [Railway](https://railway.app/)
+- [TailwindCSS](https://tailwindcss.com/)
