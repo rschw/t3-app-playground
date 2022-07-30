@@ -5,8 +5,10 @@ import { useEffect, useState } from "react";
 import React from "react";
 
 const pusher_key = process.env.NEXT_PUBLIC_PUSHER_APP_KEY!;
-const pusher_host = process.env.NEXT_PUBLIC_PUSHER_APP_HOST!;
-const pusher_port = parseInt(process.env.NEXT_PUBLIC_PUSHER_APP_PORT!, 10);
+const pusher_server_host = process.env.NEXT_PUBLIC_PUSHER_SERVER_HOST!;
+const pusher_server_port = parseInt(process.env.NEXT_PUBLIC_PUSHER_SERVER_PORT!, 10);
+const pusher_server_tls = process.env.NEXT_PUBLIC_PUSHER_SERVER_TLS === "true";
+const pusher_server_cluster = process.env.NEXT_PUBLIC_PUSHER_SERVER_CLUSTER!;
 
 interface PusherZustandStore {
   pusherClient: Pusher;
@@ -27,10 +29,12 @@ const createPusherStore = (userId: string, roomId: string) => {
     pusherClient.connect();
   } else {
     pusherClient = new Pusher(pusher_key, {
-      wsHost: pusher_host,
-      wsPort: pusher_port,
-      forceTLS: false,
-      enabledTransports: ["ws", "wss"],
+      wsHost: pusher_server_host,
+      wsPort: pusher_server_port,
+      enabledTransports: pusher_server_tls ? ["ws", "wss"] : ["ws"],
+      forceTLS: pusher_server_tls,
+      cluster: pusher_server_cluster,
+      disableStats: true,
       authEndpoint: "/api/pusher/auth-channel",
       auth: {
         headers: { user_id: userId }
