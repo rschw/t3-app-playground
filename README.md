@@ -8,10 +8,13 @@ What got me interested in playing around with the T3-Stack is the powerful setup
 
 I had so much fun with it that I ended up building a small scrum poker app. Here is what it looks like on a phone.
 
-| | | |
-|:---:|:---:|:---|
-|![Create Your Room](docs/screen1.png)|![Enter Your Room](docs/screen2.png)|![Room View](docs/screen3.png)|
-|![Welcome Screen](docs/screen4.png)|![Welcome Screen](docs/screen5.png)||
+<div style="display:grid;grid-template-columns:repeat(3, minmax(0, 1fr));gap:1rem;margin:2rem;">
+    <img src="docs/screen1.png" alt="Create Your Room" />
+    <img src="docs/screen2.png" alt="Enter Your Room" />
+    <img src="docs/screen3.png" alt="Room View" />
+    <img src="docs/screen4.png" alt="Estimation" />
+    <img src="docs/screen5.png" alt="Estimates" />
+</div>
 
 ## Getting Started
 
@@ -47,7 +50,10 @@ Run `npm run dev` to start the Next.js dev server.
 
 ## Links
 
+- [Create T3 App](https://create.t3.gg/) T3-Stack starter
+- [tRPC](https://trpc.io/) end-to-end typesafe APIs made easy
 - [Soketi](https://soketi.app/) a open-source realtime WebSockets server
 - [Pusher](https://pusher.com/) client api connect with `soketi`
 - [Vercel](https://vercel.com/) to deploy your `Next.js` app
 - [Railway](https://railway.app/) to deploy instance of `postgres` and `soketi`
+- [TailwindCSS](https://tailwindcss.com/) utility based css
