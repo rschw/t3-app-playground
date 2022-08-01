@@ -15,21 +15,17 @@ The first steps with tRPC and Next.js were so easy and I had so much fun with it
 | ![Create Your Room](docs/screen1.png) | ![Enter Your Room](docs/screen2.png) | ![Room View](docs/screen3.png) |
 | ![Estimation](docs/screen4.png)       | ![Estimates](docs/screen5.png)       |                                |
 
-I still had to spend quite some time digging into the documentation about React Hooks and Next.js because I did not yet have a good understanding of page pre-rendering in a static generation and client side rendering context. Especially finding a way to ensure that some page components or code is never run on the server.
+I still had to spend quite some time digging into the documentation about React Hooks and Next.js because I did not yet have a good understanding of page pre-rendering in a static generation and client side rendering context. Especially finding a way to ensure that some page components or code never runs on the server but on the client only.
 
 ![Architecture](docs/architecture.png)
 
 ## Getting Started
 
-Follow the instructions to run the application on your machine.
+1. Clone this repository `git clone https://github.com/rschw/t3-app-playground` and rename `.env-example` to `.env`.
 
-Clone this repository `git clone https://github.com/rschw/t3-app-playground` and rename `.env-example` to `.env`.
-
-Configure the `datasource` in `schema.prisma` to either use `sqlite` or `postgres`. When `postgres` is used make sure to spin up a docker container and configure `DATABASE_URL` in `.env`.
+2. Configure the `datasource` in `schema.prisma` to either use `sqlite` or `postgres`. When `postgres` is used make sure to spin up a docker container and configure `DATABASE_URL` in `.env`.
 
 ```prisma
-// --> schema.prisma
-
 // sqlite
 datasource db {
     provider = "sqlite"
@@ -43,13 +39,13 @@ datasource db {
 }
 ```
 
-Run `npm install` which has a `postinstall` hook that will run `npx prisma generate` for you to create the prisma db schema.
+3. `npm install` which has a `postinstall` hook that will run `npx prisma generate` for you to create the prisma db schema.
 
-Run `npx prisma db push` to push the db schema to whatever db provider you chose.
+4. `npx prisma db push` to push the db schema to whatever db provider you chose.
 
-Run `npx @soketi/soketi start` to spin up a local websocket server. `.env-example` is preconfigured to use `soketi` defaults.
+5. `npx @soketi/soketi start` to spin up a local websocket server. `.env-example` is preconfigured to use `soketi` defaults.
 
-Run `npm run dev` to start the Next.js dev server.
+6. `npm run dev` to start the Next.js dev server.
 
 ## Links
 
